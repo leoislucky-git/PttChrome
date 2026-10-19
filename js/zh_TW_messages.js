@@ -361,14 +361,14 @@
 };
 
 // Modified 2026-10-19: standalone connection and browser services.
-locale.zh_TW.connection_failed = { message: "連線未成功或已中斷。請確認網路，以及 PttChrome 連線助手是否已安裝並啟用，再重新連線。" };
+locale.zh_TW.connection_failed = { message: "連線未成功或已中斷。請確認網路，以及 PttChrome WebSocket 版擴充功能是否已安裝並啟用，再重新連線。" };
 locale.zh_TW.connection_connecting = { message: "正在連線…" };
 locale.zh_TW.storage_failed = { message: "瀏覽器無法讀取或儲存設定，本次將暫存於記憶體；關閉網頁後可能無法保留。" };
 locale.zh_TW.clipboard_copyFailed = { message: "複製未成功，請使用瀏覽器的複製功能。" };
 locale.zh_TW.clipboard_pasteFailed = { message: "無法讀取剪貼簿。請點回終端機，使用 Ctrl+V 或 Ctrl+Shift+V 貼上。" };
 locale.zh_TW.autologin_warning = { message: "帳密僅儲存在此瀏覽器，未加密；清除網站資料後會刪除。" };
 locale.zh_TW.input_sitePlaceholder = { message: "ptt.cc 或 ptt2.cc" };
-locale.zh_TW.about_version = { message: "網頁維護版 2026.10.19" };
+locale.zh_TW.about_version = { message: "WebSocket 版 2026.10.19" };
 locale.zh_TW.about_new_content = { message: ["改用 WebSocket 直連 PTT。","修正文章狀態辨識，恢復文章中的滑鼠瀏覽操作。"] };
 locale.zh_TW.connection_invalidSite = { message: "僅支援 ptt.cc 或 ptt2.cc。" };
 locale.zh_TW.about_maintainer = { message: "非官方維護版 · leoislucky-git" };

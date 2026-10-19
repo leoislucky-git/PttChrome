@@ -1226,10 +1226,10 @@ TermView.prototype = {
       this.titleTimer = null;
     }
     this.titleTimer = setTimer(true, function() {
-      if (document.title == app.connectedUrl.site) {
+      if (document.title == app.getPageTitle()) {
         document.title = title + ' ' + app.waterball.message;
       } else {
-        document.title = app.connectedUrl.site;
+        document.title = app.getPageTitle();
       }
     }, 1500);
     var options = {

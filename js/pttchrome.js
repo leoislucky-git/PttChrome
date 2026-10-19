@@ -2,6 +2,7 @@
 ﻿// Main Program
 
 var pttchrome = {};
+pttchrome.APP_NAME = 'PttChrome WebSocket 版';
 
 pttchrome.App = function(onInitializedCallback) {
 
@@ -143,7 +144,7 @@ pttchrome.App = function(onInitializedCallback) {
     if (self.view.titleTimer) {
       self.view.titleTimer.cancel();
       self.view.titleTimer = null;
-      document.title = self.connectedUrl.site;
+      document.title = self.getPageTitle();
       if (self.view.notif) self.view.notif.close();
     }
   }, false);
@@ -201,12 +202,16 @@ pttchrome.App = function(onInitializedCallback) {
   }
 };
 
+pttchrome.App.prototype.getPageTitle = function() {
+  return pttchrome.APP_NAME + ' - ' + this.connectedUrl.site;
+};
+
 pttchrome.App.prototype.connect = function(url) {
   this.conn.disconnect();
   this.onClose();
   this.parser = new lib.AnsiParser(this.buf);
   this.connectedUrl.site = url;
-  document.title = url;
+  document.title = this.getPageTitle();
   $('#connectionAlertText').text(i18n('connection_connecting'));
   this.conn.connect(url);
 };

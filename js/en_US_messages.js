@@ -364,14 +364,14 @@ locale.en_US = {
 };
 
 // Modified 2026-10-19: standalone connection and browser services.
-locale.en_US.connection_failed = { message: "Connection failed or closed. Check your network and make sure the PttChrome Connection Helper is installed and enabled, then reconnect." };
+locale.en_US.connection_failed = { message: "Connection failed or closed. Check your network and make sure the PttChrome WebSocket extension is installed and enabled, then reconnect." };
 locale.en_US.connection_connecting = { message: "Connecting…" };
 locale.en_US.storage_failed = { message: "Browser settings could not be read or saved. Changes will be kept in memory and may be lost when this page closes." };
 locale.en_US.clipboard_copyFailed = { message: "Copy failed. Please use the browser copy command." };
 locale.en_US.clipboard_pasteFailed = { message: "Clipboard access failed. Focus the terminal and use Ctrl+V or Ctrl+Shift+V." };
 locale.en_US.autologin_warning = { message: "Credentials are stored only in this browser, without encryption. Clearing site data removes them." };
 locale.en_US.input_sitePlaceholder = { message: "ptt.cc or ptt2.cc" };
-locale.en_US.about_version = { message: "Web maintenance edition 2026.10.19" };
+locale.en_US.about_version = { message: "WebSocket edition 2026.10.19" };
 locale.en_US.about_new_content = { message: ["Connects directly to PTT over WebSocket.","Updated article status recognition restores mouse browsing in articles."] };
 locale.en_US.connection_invalidSite = { message: "Only ptt.cc and ptt2.cc are supported." };
 locale.en_US.about_maintainer = { message: "Unofficial edition · leoislucky-git" };

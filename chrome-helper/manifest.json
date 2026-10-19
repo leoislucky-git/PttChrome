@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PttChrome 連線助手（非官方維護版）",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "minimum_chrome_version": "101",
   "description": "協助 leoislucky-git 的 PttChrome 網頁版直接連線 PTT／PTT2，保留原本介面；僅調整指定連線的來源標頭。",
   "homepage_url": "https://leoislucky-git.github.io/PttChrome/",

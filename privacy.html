@@ -14,10 +14,16 @@
     <article class="markdown-body" style="max-width:850px;margin:40px auto;padding:24px">
       <h1>PttChrome 維護版：資料與連線說明</h1>
       <p>更新日期：2026-10-19。本網站由 leoislucky-git 維護，以 GPL-2.0 授權公開原始碼；原作者為 Chuck Yang。</p>
+      <h2 id="extension">PttChrome 連線助手（非官方維護版）隱私權政策</h2>
+      <p>本擴充功能由 leoislucky-git 維護，並非 PTT 官方或原作者發行。唯一用途是讓本站網頁版直接連線 PTT／PTT2。安裝啟用後自動生效，沒有另外的操作面板。</p>
+      <p>擴充功能只包含隨套件提供的固定連線規則，不執行遠端程式碼，沒有內容指令碼、背景程式、分析追蹤或資料儲存功能，也不讀取、收集、記錄、出售或上傳帳密、文章內容、瀏覽紀錄及其他個人資料。它不會將 PTT 連線轉送至維護者或第三方代理。</p>
+      <p>權限 declarativeNetRequestWithHostAccess 用於讓 Chrome 套用固定的來源標頭規則。網站權限限於 https://leoislucky-git.github.io/*、wss://ws.ptt.cc/* 及 wss://ws.ptt2.cc/*。規則只對本站來源發起、目的地為上述 PTT 主機 /bbs 路徑的 WebSocket 連線生效，將 Origin 改為 https://term.ptt.cc；其他請求不受這些規則影響。這不會載入官方網頁的介面。</p>
+      <p>帳密與終端機內容由網頁透過加密 WebSocket 直接傳送給所選 PTT 伺服器；PTT 會收到建立服務連線所需的資料，包括連線 IP。網頁本身的設定儲存與選用服務另見下方說明，與擴充功能的行為分開。</p>
+      <p>擴充功能本身沒有收集或保留資料，因此沒有需向維護者申請刪除的資料。解除安裝即可移除其連線規則。清除網頁所儲存的設定，請使用下方說明的網站資料清除方式。隱私問題及功能問題請至 <a href="https://github.com/leoislucky-git/PttChrome/issues">GitHub Issues</a> 聯絡維護者；此管道公開，請勿張貼密碼或其他敏感資料。</p>
       <h2>瀏覽器設定與自動登入</h2>
-      <p>偏好設定、黑名單與自行填寫的自動登入帳密，儲存在此瀏覽器的網站資料中。清除網站資料會刪除這些設定。它們不會上傳 GitHub 或 Google Drive；原 Chrome App 的設定不會自動移轉。</p>
+      <p>偏好設定、黑名單與自行填寫的自動登入帳密，儲存在此瀏覽器的網站資料中。自動登入帳密為可讀取的本機資料，並非加密密碼庫；不想保留時可刪除自動登入欄位並關閉設定視窗以儲存，或清除網站資料以刪除全部設定。它們不會作為備份上傳 GitHub 或 Google Drive；登入時帳密會傳給所選 PTT 伺服器。原 Chrome App 的設定不會自動移轉。</p>
       <h2>連線</h2>
-      <p>留空自訂網址時，PTT 與 PTT2 分別使用 wss://ws.ptt.cc/bbs 與 wss://ws.ptt2.cc/bbs。官方服務可能拒絕第三方網站來源；GitHub Pages 無法執行連線代理。你可在一般設定填入信任的 wss:// 二進位 WebSocket 代理，再按重新連線。本站不預設使用第三方公開代理。代理須自行提供上游連線及來源相容設定，並會經手帳密與文章資料。</p>
+      <p>留空自訂網址時，PTT 與 PTT2 分別使用 wss://ws.ptt.cc/bbs 與 wss://ws.ptt2.cc/bbs。官方服務可能拒絕第三方網站來源；可安裝上述連線助手處理來源標頭。也可在一般設定填入信任的 wss:// 二進位 WebSocket 代理，再按重新連線。本站不預設使用第三方公開代理。代理須自行提供上游連線及來源相容設定，並會經手帳密與文章資料。GitHub Pages 只提供靜態網頁，無法執行連線代理。</p>
       <h2>Google Drive 黑名單備份</h2>
       <p>這是選用功能，只會傳送你選擇儲存的黑名單。需在 Google Cloud 建立自己的網頁 OAuth 用戶端、啟用 Drive API，並加入本站來源 https://leoislucky-git.github.io。將用戶端 ID 填入黑名單設定並授權後，才會使用 Google 服務。授權 token 僅暫存在記憶體。檔案清單僅列出目前用戶端獲准存取的文字備份，舊 App 的授權與備份不會自動移轉。</p>
       <h2>其他瀏覽器功能</h2>

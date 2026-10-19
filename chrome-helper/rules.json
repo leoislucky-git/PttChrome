@@ -1,0 +1,48 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "requestHeaders": [
+        {
+          "header": "origin",
+          "operation": "set",
+          "value": "https://term.ptt.cc"
+        }
+      ]
+    },
+    "condition": {
+      "urlFilter": "|wss://ws.ptt.cc/bbs|",
+      "initiatorDomains": [
+        "leoislucky-git.github.io"
+      ],
+      "resourceTypes": [
+        "websocket"
+      ]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "requestHeaders": [
+        {
+          "header": "origin",
+          "operation": "set",
+          "value": "https://term.ptt.cc"
+        }
+      ]
+    },
+    "condition": {
+      "urlFilter": "|wss://ws.ptt2.cc/bbs|",
+      "initiatorDomains": [
+        "leoislucky-git.github.io"
+      ],
+      "resourceTypes": [
+        "websocket"
+      ]
+    }
+  }
+]

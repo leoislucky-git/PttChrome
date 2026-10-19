@@ -17,14 +17,14 @@ var DEFAULT_PREFS = {
   deleteDupLogin        : false,
 
   // mouse browsing
-  useMouseBrowsing            : false,
+  useMouseBrowsing            : true,
   mouseBrowsingHighlight      : true,
-  mouseBrowsingHighlightColor : 2,
+  mouseBrowsingHighlightColor : 1,
   mouseLeftFunction           : 0,
   mouseMiddleFunction         : 0,
-  mouseWheelFunction1         : 1,
-  mouseWheelFunction2         : 2,
-  mouseWheelFunction3         : 3,
+  mouseWheelFunction1         : 2,
+  mouseWheelFunction2         : 0,
+  mouseWheelFunction3         : 0,
 
   // displays
   fontFitWindowWidth: false,

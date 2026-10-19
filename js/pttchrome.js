@@ -611,14 +611,14 @@ pttchrome.App.prototype.antiIdle = function() {
 };
 
 pttchrome.App.prototype.updateTabIcon = function(aStatus) {
-  var icon = 'icon/logo.png';
+  var icon = 'icon/logo.png?v=teal1';
   switch (aStatus) {
     case 'connect':
-      icon =  'icon/logo_connect.png';
+      icon =  'icon/logo_connect.png?v=teal1';
       this.setInputAreaFocus();
       break;
     case 'disconnect':
-      icon =  'icon/logo_disconnect.png';
+      icon =  'icon/logo_disconnect.png?v=teal1';
       break;
     default:
       break;

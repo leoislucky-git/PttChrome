@@ -1233,7 +1233,7 @@ TermView.prototype = {
       }
     }, 1500);
     var options = {
-      icon: 'icon_128.png',
+      icon: 'icon/logo128.png?v=teal1',
       body: app.waterball.message,
       tag: app.waterball.userId
     };

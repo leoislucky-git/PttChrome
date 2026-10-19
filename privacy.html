@@ -9,17 +9,20 @@
     <link type="text/css" rel="stylesheet" href="css/github-markdown.css">
     <link type="text/css" rel="stylesheet" href="css/pilcrow.css">
     <link type="text/css" rel="stylesheet" href="css/hljs-github.min.css"/>
-    <script src="js/markdown.js"></script>
-    <script>
-      fetch('https://raw.githubusercontent.com/iamchucky/PttChrome/master/PRIVACY.md')
-        .then(response => response.text())
-        .then(text => {
-          const markdownBody = document.getElementById('markdown-body');
-          markdownBody.innerHTML = markdown.toHTML(text);
-        });
-    </script>
   </head>
   <body>
-    <article id="markdown-body" class="markdown-body"></article>
+    <article class="markdown-body" style="max-width:850px;margin:40px auto;padding:24px">
+      <h1>PttChrome 維護版：資料與連線說明</h1>
+      <p>更新日期：2026-10-19。本網站由 leoislucky-git 維護，以 GPL-2.0 授權公開原始碼；原作者為 Chuck Yang。</p>
+      <h2>瀏覽器設定與自動登入</h2>
+      <p>偏好設定、黑名單與自行填寫的自動登入帳密，儲存在此瀏覽器的網站資料中。清除網站資料會刪除這些設定。它們不會上傳 GitHub 或 Google Drive；原 Chrome App 的設定不會自動移轉。</p>
+      <h2>連線</h2>
+      <p>留空自訂網址時，PTT 與 PTT2 分別使用 wss://ws.ptt.cc/bbs 與 wss://ws.ptt2.cc/bbs。官方服務可能拒絕第三方網站來源；GitHub Pages 無法執行連線代理。你可在一般設定填入信任的 wss:// 二進位 WebSocket 代理，再按重新連線。本站不預設使用第三方公開代理。代理須自行提供上游連線及來源相容設定，並會經手帳密與文章資料。</p>
+      <h2>Google Drive 黑名單備份</h2>
+      <p>這是選用功能，只會傳送你選擇儲存的黑名單。需在 Google Cloud 建立自己的網頁 OAuth 用戶端、啟用 Drive API，並加入本站來源 https://leoislucky-git.github.io。將用戶端 ID 填入黑名單設定並授權後，才會使用 Google 服務。授權 token 僅暫存在記憶體。檔案清單僅列出目前用戶端獲准存取的文字備份，舊 App 的授權與備份不會自動移轉。</p>
+      <h2>其他瀏覽器功能</h2>
+      <p>複製、貼上與通知受瀏覽器權限限制；若右鍵貼上無法使用，請點回終端機按 Ctrl+V 或 Ctrl+Shift+V。圖片預覽、外部連結及分享按鈕可能連線至所選網站或原有第三方服務。</p>
+      <p><a href="https://github.com/leoislucky-git/PttChrome">原始碼與授權</a> · <a href="index.html">回到 PttChrome</a></p>
+    </article>
   </body>
 </html>

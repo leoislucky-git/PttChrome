@@ -1,3 +1,4 @@
+// Modified 2026-10-19: standalone web client; removed Chrome App dependencies.
 ﻿var PREFS_CATEGORIES = ['mouseBrowsing', 'appearance'];
 var PREFS_NAV = ['general', 'autologin', 'blacklist', 'extensions', 'about'];
 var DEFAULT_PREFS = {
@@ -5,7 +6,8 @@ var DEFAULT_PREFS = {
   // general
   closeQuery            : false,
   //dbcsDetect    : false,
-  openInPackagedApp     : false,
+  webSocketUrl         : '',
+  googleDriveClientId   : '',
   enablePicPreview      : true,
   enableNotifications   : true,
   enableEasyReading     : false,

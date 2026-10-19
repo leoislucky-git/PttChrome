@@ -1,3 +1,4 @@
+// Modified 2026-10-19: standalone web client; removed Chrome App dependencies.
 // Handle Telnet Connections according to RFC 854
 
 // Telnet commands
@@ -41,8 +42,13 @@ function TelnetConnection(app) {
   this.app = app;
 
   this.host = 'ptt.cc';
-  this.port = 23;
-  this.keepAlive = null;
+  var self = this;
+  this.socket = new lib.WebSocketConnection({
+    open: function() { self.app.onConnect(); },
+    data: function(data) { self.onDataAvailable(data); },
+    close: function() { self.isConnected = false; self.app.onClose(); },
+    error: function(message) { self.app.showConnectionError(message); }
+  });
 
   this.state = STATE_DATA;
   this.iac_sb = '';
@@ -53,16 +59,14 @@ function TelnetConnection(app) {
 
   //AutoLogin - start
   this.autoLoginStage = 0;
-  this.loginPrompt = ['','',''];
   this.loginStr = ['','','',''];
   //AutoLogin - end
   this.isConnected = false;
 }
 
-TelnetConnection.prototype.connect = function(host, port) {
+TelnetConnection.prototype.connect = function(host) {
   if (host) {
     this.host = host;
-    this.port = port;
   }
 
   // Check AutoLogin Stage
@@ -76,10 +80,37 @@ TelnetConnection.prototype.connect = function(host, port) {
 
   //this.initialAutoLogin();
   this.isConnected = false;
-  this.app.appConn.connectTcp(this.host, this.port, this.keepAlive);
+  this.state = STATE_DATA;
+  this.iac_sb = '';
+  this.preamble = '';
+  this.preambleDone = false;
+  try {
+    this.socket.connect(lib.WebSocketConnection.resolveUrl(this.host, this.app.pref.get('webSocketUrl').trim()));
+  } catch (error) {
+    this.app.onClose();
+    this.app.showConnectionError(i18n('connection_invalidUrl'));
+  }
+};
+
+TelnetConnection.prototype.disconnect = function() {
+  this.socket.disconnect();
+  this.isConnected = false;
 };
 
 TelnetConnection.prototype.onDataAvailable = function(str) {
+  // Some BBS gateways prefix the binary stream with an HTTP response header.
+  if (!this.preambleDone) {
+    this.preamble += str;
+    if (this.preamble.length < 5 && 'HTTP/'.indexOf(this.preamble) === 0) return;
+    if (this.preamble.indexOf('HTTP/') === 0) {
+      var end = this.preamble.indexOf('\r\n\r\n');
+      if (end < 0 && this.preamble.length < 16384) return;
+      if (end >= 0) this.preamble = this.preamble.substring(end + 4);
+    }
+    str = this.preamble;
+    this.preamble = '';
+    this.preambleDone = true;
+  }
   var data='';
   var count = str.length;
   while (count > 0) {
@@ -118,11 +149,13 @@ TelnetConnection.prototype.onDataAvailable = function(str) {
           this.state=STATE_SB;
           break;
         default:
+          if (ch == IAC) data += IAC;
           this.state=STATE_DATA;
         }
         break;
       case STATE_WILL:
         switch (ch) {
+        case '\x00': // BINARY
         case ECHO:
         case SUPRESS_GO_AHEAD:
           this.send( IAC + DO + ch );
@@ -134,6 +167,9 @@ TelnetConnection.prototype.onDataAvailable = function(str) {
         break;
       case STATE_DO:
         switch (ch) {
+        case '\x00': // BINARY
+          this.send(IAC + WILL + ch);
+          break;
         case TERM_TYPE:
           this.send( IAC + WILL + ch );
           break;
@@ -177,9 +213,9 @@ TelnetConnection.prototype.onDataAvailable = function(str) {
 
 TelnetConnection.prototype.send = function(str) {
   if (str) {
-    if (this.app && this.app.appConn) {
+    if (this.isConnected) {
       this.app.idleTime = 0;
-      this.app.appConn.sendTcp(str);
+      this.socket.send(str);
     }
   }
 };
@@ -192,7 +228,7 @@ TelnetConnection.prototype.convSend = function(unicode_str) {
   // detect ;50m (half color) and then convert accordingly
   if (s) {
     s = s.ansiHalfColorConv();
-    this.send(s);
+    this.send(s.replace(/\xff/g, '\xff\xff'));
   }
 };
 
@@ -211,16 +247,20 @@ TelnetConnection.prototype.checkAutoLogin = function(row) {
   }
 
   var line = this.app.buf.getRowText(row, 0, this.app.buf.cols);
-  if (line.indexOf(this.loginPrompt[this.autoLoginStage - 1]) < 0)
+  if (this.autoLoginStage == 2 && !/請輸入.*(?:代號|帳號)/.test(line)) return;
+  if (this.autoLoginStage == 3 && !/請輸入.*密碼/.test(line)) return;
+  if (!this.loginStr[this.autoLoginStage - 1]) {
+    this.autoLoginStage = 0;
     return;
+  }
 
-  if (this.host == 'ptt.cc') {
+  if (/^ptt2?\.cc(?::(?:23|443))?$/.test(this.host)) {
     var unicode_str = this.loginStr[this.autoLoginStage-1] + this.app.view.EnterChar;
     this.convSend(unicode_str);
   }
 
   if (this.autoLoginStage == 3) {
-    if (this.loginStr[3] && this.host == 'ptt.cc')
+    if (this.loginStr[3] && /^ptt2?\.cc(?::(?:23|443))?$/.test(this.host))
       this.convSend(this.loginStr[3]);
     this.autoLoginStage = 0;
     return;

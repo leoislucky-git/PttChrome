@@ -1,3 +1,4 @@
+// Modified 2026-10-19: standalone web client; removed Chrome App dependencies.
 module.exports = function(grunt) {
 
   // Project configuration.
@@ -36,13 +37,13 @@ module.exports = function(grunt) {
           'js/pttchrome.js', 
           'js/touch_controller.js',
           'js/google_drive.js',
-          'js/app_conn.js', 
+          'js/websocket.js',
+          'js/browser_storage.js',
           'js/predefined_config.js', 
           'js/pref.js', 
           'js/emoticon.js',
           'js/symbols.js',
           'js/input_helper.js',
-          'js/ssh.js', 
           'js/telnet.js', 
           'js/b2u_table.js',
           'js/u2b_table.js',
@@ -64,13 +65,13 @@ module.exports = function(grunt) {
           'js/pttchrome.js', 
           'js/touch_controller.js',
           'js/google_drive.js',
-          'js/app_conn.js', 
+          'js/websocket.js',
+          'js/browser_storage.js',
           'js/predefined_config.js', 
           'js/pref.js', 
           'js/emoticon.js',
           'js/symbols.js',
           'js/input_helper.js',
-          'js/ssh.js', 
           'js/telnet.js', 
           'js/b2u_table.js',
           'js/u2b_table.js',

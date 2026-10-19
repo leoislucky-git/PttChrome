@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Modified 2026-10-19: standalone web entry point. -->
 <html>
   <head>
 	<title>PttChrome</title>
@@ -10,26 +11,22 @@
     <link rel="stylesheet" type="text/css" href="css/main.css" />
     <link rel="stylesheet" type="text/css" href="css/color.css" />
 
-    <link rel="chrome-webstore-item" href="https://chrome.google.com/webstore/detail/hhnlfapopmaimdlldbknjdgekpgffmbo">
 
     <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="js/paramikojs_ssh.min.js"></script>
     <script type="text/javascript" src="js/hammer.min.js"></script>
 
-    <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
-    <script type="text/javascript" src="https://apis.google.com/js/client.js"></script>
 
     <script type="text/javascript" src="js/pttchrome.js"></script>
     <script type="text/javascript" src="js/touch_controller.js"></script>
     <script type="text/javascript" src="js/google_drive.js"></script>
-    <script type="text/javascript" src="js/app_conn.js"></script>
+    <script type="text/javascript" src="js/websocket.js"></script>
     <script type="text/javascript" src="js/predefined_config.js"></script>
     <script type="text/javascript" src="js/pref.js"></script>
     <script type="text/javascript" src="js/emoticon.js"></script>
     <script type="text/javascript" src="js/symbols.js"></script>
     <script type="text/javascript" src="js/input_helper.js"></script>
-    <script type="text/javascript" src="js/ssh.js"></script>
+    <script type="text/javascript" src="js/browser_storage.js"></script>
     <script type="text/javascript" src="js/telnet.js"></script>
     <script type="text/javascript" src="js/b2u_table.js"></script>
     <script type="text/javascript" src="js/u2b_table.js"></script>
@@ -128,8 +125,8 @@
                 <div class="group">
                   <div class="list-group">
                     <div class="list-group-item-text">
-                      <div id="opt_openInPackagedApp" class="checkbox">
-                      </div>
+                      <div id="opt_webSocketUrl" class="form-group"></div>
+                      <p id="connectionEndpointHelp" class="help-block"></p>
                       <div id="opt_closeQuery" class="checkbox">
                       </div>
                       <div id="opt_enablePicPreview" class="checkbox">
@@ -212,6 +209,8 @@
                 <div id="opt_enableBlacklist" class="checkbox">
                 </div>
 
+                <div id="opt_googleDriveClientId" class="form-group"></div>
+                <p id="googleDriveHelp" class="help-block"></p>
                 <div id="blacklist_driveSync" style="margin-bottom:10px">
                   <span id="blacklist_driveSyncTitle" style="margin-right:5px">Use Google Drive:</span>
                   <a id="blacklist_driveAuthorize" style="margin-top:-3px" class="btn btn-default">Authorize PttChrome</a>
@@ -224,6 +223,7 @@
                       <li><a id="blacklist_driveSaveExisting" style="padding:3px 20px; cursor:pointer;">Existing Document</a></li>
                     </ul>
                   </div>
+                  <select id="blacklist_driveFiles" class="form-control" style="margin-top:8px" aria-label="Google Drive files"></select>
                   <span id="blacklist_driveDone" style="margin-left:5px; display:none;">Done!</span>
                   <span id="blacklist_driveLoading" style="margin-left:5px; display:none;">Loading ...</span>
                   <a style="margin-left:5px" href="privacy.html" target="_blank"><span id="blacklist_privacyPolicy">Privacy Policy</span></a>
@@ -250,16 +250,11 @@
               <div class="tab-pane" id="tabContentAbout">
                 <div class="list-group">
                   <h4 class="list-group-item-heading">PttChrome <small>by <a href="mailto:yangchuck@gmail.com" target="_blank" rel="noreferrer">Chuck Yang</a></small></h4>
-                  <a href='https://github.com/iamchucky/PttChrome' target="_blank" rel="noreferrer">https://github.com/iamchucky/PttChrome</a>
+                  <a href='https://github.com/leoislucky-git/PttChrome' target="_blank" rel="noreferrer">https://github.com/leoislucky-git/PttChrome</a>
                   <div class="list-group-item-text" style="margin-top:10px;">
-                    <a id="about_review" href="https://chrome.google.com/webstore/detail/pttchrome/hhnlfapopmaimdlldbknjdgekpgffmbo/reviews" target="_blank" rel="noreferrer" class="btn btn-default"></a>
-                    <a id="about_feedback" href="mailto:pttchrome.feedback@gmail.com" target="_blank" rel="noreferrer" class="btn btn-default"></a>
+                    <a id="about_feedback" href="https://github.com/leoislucky-git/PttChrome/issues" target="_blank" rel="noreferrer" class="btn btn-default"></a>
                     <a id="about_fbpage" href="https://www.facebook.com/pttchrome" target="_blank" rel="noreferrer" class="btn btn-default"></a>
                   </div>
-                </div>
-                <div class="list-group">
-                  <span id="about_promote" style="color:red;"></span>
-                  <a href="https://chrome.google.com/webstore/detail/web2pttchrome/pjemnpgdmnlkkcpaddlnlegmdfpohnep" target="_blank" rel="noreferrer">Web2PttChrome</a>
                 </div>
                 <div class="list-group">
                   <h4 id="about_version_title" class="list-group-item-heading"></h4>
@@ -283,30 +278,13 @@
       </div>
     </div>
     <div id="connectionAlert" class="alert alert-danger alert-dismissable fade in">
-      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      <button id="connectionAlertDismiss" type="button" class="close" aria-hidden="true">&times;</button>
       <h4 id="connectionAlertHeader"></h4>
       <p id="connectionAlertText"></p>
       <p>
-        <button id="connectionAlertReconnect" type"button" class="btn btn-danger"></button>
-        <span id="connectionAlertPortOption1" style="margin-left:5px;">or</span>
-        <span id="connectionAlertPortOption2" style="cursor:pointer;margin-left:5px;text-decoration:underline;"> Try with port 443 </span>
+        <button id="connectionAlertReconnect" type="button" class="btn btn-danger"></button>
       </p>
-    </div>
-    <div id="welcomeJumbo" style="cursor:default;">
-      <div id="welcomeBanner">
-        <div id="bigLogo"></div>
-        <h1>踢踢控</h1>
-        <br/>
-        <h2 id="welcomeBannerPtt">Ptt</h2><h2 id="welcomeBannerChrome">Chrome</h2>
-        <br/>
-        <div id="getAppBtn" class="btn btn-default btn-lg">Get from Chrome Web Store</div>
-        <div id="alreadyInstalledHintContainer" style="margin-top:100px; font-size:20px;">
-          <div id="alreadyInstalledHint1" style="margin-bottom:5px; font-size:30px;">Already have PttChrome installed?</div>
-          <div id="alreadyInstalledHint2">To launch PttChrome, please set Google Chrome as your default browser and launch from the "批" icon</div>
-          <div id="alreadyInstalledHint3" style="margin:10px 0;">OR</div>
-          <div id="alreadyInstalledHint4">Add http://iamchucky.github.io/PttChrome/ to Chrome bookmarks and launch PttChrome from the bookmark</div>
-        </div>
-      </div>
+      <button id="connectionSettings" type="button" class="btn btn-default"></button>
     </div>
     <img id="picPreview" src='' style='max-height:80%; max-width:90%'></img>
     <i id="picLoading" class="glyphicon glyphicon-refresh glyphicon-refresh-animate" style="display:none; position:absolute; z-index:2"></i>

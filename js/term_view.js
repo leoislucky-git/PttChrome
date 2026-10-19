@@ -1,3 +1,4 @@
+// Modified 2026-10-19: standalone web client; removed Chrome App dependencies.
 // Terminal View
 
 function TermView(rowCount) {
@@ -158,7 +159,7 @@ function TermView(rowCount) {
       if (e.keyCode == 13)
         document.getElementById('connectionAlertReconnect').click();
       if (e.keyCode == 27)
-        document.getElementById('connectionAlertExitAll').click();
+        $('#connectionAlert').hide();
       return;
     }
     self.onkeyDown(e);
@@ -609,6 +610,7 @@ TermView.prototype = {
   },
 
   onkeyDown: function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.keyCode === 86) return;
     // dump('onKeyPress:'+e.charCode + ', '+e.keyCode+'\n');
     var conn = this.conn;
     var charCode;
@@ -744,6 +746,7 @@ TermView.prototype = {
       }
       return;
     } else if (e.ctrlKey && !e.altKey && !e.shiftKey) {
+      if (e.keyCode == 86) return;
       if ((e.keyCode == 99 || e.keyCode == 67) && !window.getSelection().isCollapsed) { //^C , do copy
         var selectedText = window.getSelection().toString().replace(/\u00a0/g, " ");
         this.bbscore.doCopy(selectedText);
@@ -790,12 +793,8 @@ TermView.prototype = {
       case 191: // ?
         charCode = 127;
         break;
-      case 86: //ctrl+shift+v
-        this.bbscore.doPaste();
-        e.preventDefault();
-        e.stopPropagation();
-        charCode = 0;
-        break;
+      case 86: // Let the native paste event handle Ctrl+Shift+V.
+        return;
       }
     }
     if (charCode) {
@@ -1238,6 +1237,7 @@ TermView.prototype = {
       body: app.waterball.message,
       tag: app.waterball.userId
     };
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
     this.notif = new Notification(title, options);
     this.notif.onclick = function() {
       window.focus();
@@ -1331,6 +1331,7 @@ TermView.prototype = {
       return;
     var self = this;
     this.fbSharingDiv.childNodes[0].setAttribute('data-href', pttUrl);
+    if (typeof FB === 'undefined') return;
     FB.XFBML.parse(document.getElementById('fbSharing'), function() {
       if (self.hideFbSharing) {
         return;

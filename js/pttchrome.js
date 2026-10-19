@@ -1,8 +1,9 @@
+// Modified 2026-10-19: standalone web client; removed Chrome App dependencies.
 ﻿// Main Program
 
 var pttchrome = {};
 
-pttchrome.App = function(onInitializedCallback, options) {
+pttchrome.App = function(onInitializedCallback) {
 
   this.CmdHandler = document.getElementById('cmdHandler');
   this.CmdHandler.setAttribute('useMouseBrowsing', '1');
@@ -41,13 +42,7 @@ pttchrome.App = function(onInitializedCallback, options) {
   this.CmdHandler.setAttribute('SkipMouseClick','0');
   this.pref = null;
 
-  var useSSH = getQueryVariable('ssh');
-  if (useSSH == 'true' || options.ssh) {
-    this.conn = new SecureShellConnection(this);
-  } else {
-    this.conn = new TelnetConnection(this);
-  }
-  this.conn.keepAlive = options.keepAlive;
+  this.conn = new TelnetConnection(this);
 
   this.view = new TermView(24);
   this.buf = new TermBuf(80, 24);
@@ -149,7 +144,7 @@ pttchrome.App = function(onInitializedCallback, options) {
       self.view.titleTimer.cancel();
       self.view.titleTimer = null;
       document.title = self.connectedUrl.site;
-      self.view.notif.close();
+      if (self.view.notif) self.view.notif.close();
     }
   }, false);
 
@@ -170,16 +165,19 @@ pttchrome.App = function(onInitializedCallback, options) {
     }
   });
 
-  this.isFromApp = (options.from === 'app');
   window.addEventListener('message', function(e) {
+    if (e.origin !== window.location.origin) return;
     var msg = e.data;
-    if (self.isFromApp && msg.action === 'newwindow' && self.appConn && self.appConn.isConnected) {
-      self.appConn.appPort.postMessage({ action: 'newWindow', data: msg.data });
-    } else if (msg.action == 'navigate') {
+    if (msg && msg.action === 'navigate' && msg.data && self.conn.isConnected) {
       self.navigationDone = false;
       self.navigateTo = msg.data;
       self.conn.send('\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D');
     }
+  });
+  this.inputArea.addEventListener('paste', function(e) {
+    if (self.modalShown || !e.clipboardData) return;
+    e.preventDefault();
+    self.onPasteDone(e.clipboardData.getData('text/plain'));
   });
 
   this.dblclickTimer=null;
@@ -195,13 +193,7 @@ pttchrome.App = function(onInitializedCallback, options) {
   this.contextMenuShown = false;
 
   this.pref = new PttChromePref(this, onInitializedCallback);
-  this.appConn = null;
-  // load the settings after the app connection is made
-  this.setupAppConnection(function() {
-    self.appConn.appPort.postMessage({ action: 'getSymFont' });
-    // call getStorage to trigger load setting
-    self.pref.getStorage();
-  });
+  this.pref.getStorage();
 
   // init touch only if chrome is higher than version 36
   if (this.chromeVersion && this.chromeVersion >= 37) {
@@ -209,45 +201,24 @@ pttchrome.App = function(onInitializedCallback, options) {
   }
 };
 
-pttchrome.App.prototype.setupAppConnection = function(callback) {
-  var self = this;
-  this.appConn = new lib.AppConnection({
-    onConnect: self.onConnect.bind(self),
-    onDisconnect: self.onClose.bind(self),
-    onReceive: self.conn.onDataAvailable.bind(self.conn),
-    onSent: null,
-    onPasteDone: self.onPasteDone.bind(self),
-    onStorageDone: self.pref.onStorageDone.bind(self.pref),
-    onSymFont: self.onSymFont.bind(self)
-  });
-  this.appConn.connect(callback);
+pttchrome.App.prototype.connect = function(url) {
+  this.conn.disconnect();
+  this.onClose();
+  this.parser = new lib.AnsiParser(this.buf);
+  this.connectedUrl.site = url;
+  document.title = url;
+  $('#connectionAlertText').text(i18n('connection_connecting'));
+  this.conn.connect(url);
 };
 
-pttchrome.App.prototype.connect = function(url) {
-  var self = this;
-  var port = 23;
-  var splits = url.split(/:/g);
-  document.title = url;
-  if (splits.length == 2) {
-    url = splits[0];
-    port = parseInt(splits[1]);
-  }
-  this.connectedUrl.site = url;
-  this.connectedUrl.port = port;
-
-  if (!this.appConn.isConnected) {
-    this.setupAppConnection(function() {
-      dumpLog(DUMP_TYPE_LOG, "connect to " + url);
-      self.conn.connect(url, port);
-    });
-  } else {
-    dumpLog(DUMP_TYPE_LOG, "connect to " + url);
-    this.conn.connect(url, port);
-  }
+pttchrome.App.prototype.showConnectionError = function(message) {
+  $('#connectionAlertText').text(message);
+  $('#connectionAlert').show();
 };
 
 pttchrome.App.prototype.onConnect = function() {
   this.conn.isConnected = true;
+  $('#connectionAlertText').text(i18n('alert_connectionText'));
   $('#connectionAlert').hide();
   dumpLog(DUMP_TYPE_LOG, "pttchrome onConnect");
   this.connectState = 1;
@@ -298,6 +269,7 @@ pttchrome.App.prototype.onClose = function() {
   this.connectState = 2;
   this.idleTime = 0;
 
+  $('#connectionAlertText').text(i18n('connection_failed'));
   $('#connectionAlert').show();
   this.updateTabIcon('disconnect');
 };
@@ -429,34 +401,13 @@ pttchrome.App.prototype.setupConnectionAlert = function() {
   $('#connectionAlertHeader').text(i18n('alert_connectionHeader'));
   $('#connectionAlertText').text(i18n('alert_connectionText'));
   $('#connectionAlertReconnect').text(i18n('alert_connectionReconnect'));
-  $('#connectionAlertPortOption1').text(i18n('alert_connectionPortOption1'));
-  $('#connectionAlertPortOption2').text(i18n('alert_connectionPortOption2'));
-
+  $('#connectionSettings').text(i18n('menu_settings'));
   var self = this;
-  $('#connectionAlertReconnect').click(function(e) {
+  $('#connectionAlertReconnect').click(function() {
     self.connect(self.connectedUrl.site);
-    $('#connectionAlert').hide();
   });
-  $('#connectionAlertPortOption2').click(function(e) {
-    var port = 443;
-    var site = 'ptt.cc';
-    if (self.connectedUrl.site) {
-      site = self.connectedUrl.site;
-    }
-
-    if (self.isFromApp) {
-      /*
-       * fixing a problem url won't open tab in packaged app mode:
-       * - this used to happen only when user click on "try 443 port" after a
-       * disconnection.
-       * - it seems to related with the window.location.replace method
-       */
-
-      self.connect(site + ':' + port);
-    } else {
-      window.location.replace('?site=' + site + ':'+ port);
-    }
-  });
+  $('#connectionSettings').click(function() { self.doSettings(); });
+  $('#connectionAlertDismiss').click(function() { $('#connectionAlert').hide(); });
 };
 
 pttchrome.App.prototype.setupOtherSiteInput = function() {
@@ -465,43 +416,52 @@ pttchrome.App.prototype.setupOtherSiteInput = function() {
   $('#siteModal input').keyup(function(e) {
     if (e.keyCode == 13) {
       var url = $(this).val();
-      if (self.appConn && self.appConn.isConnected) {
-        self.appConn.disconnect();
-        self.onClose();
-      }
       self.connect(url);
       $('#siteModal').modal('hide');
     }
   });
   $('#siteModal').on('shown.bs.modal', function(e) {
-    $('#connectionAlert').hide();
     self.modalShown = true;
     $('#siteModal input').val('');
     $('#siteModal input').focus();
   });
   $('#siteModal').on('hidden.bs.modal', function(e) {
-    $('#connectionAlert').hide();
     self.modalShown = false;
   });
 
 };
 
 pttchrome.App.prototype.doCopy = function(str) {
-  var port = this.appConn.appPort;
-  if (!port)
-    return;
-
   if (str.indexOf('\x1b') < 0) {
     str = str.replace(/\r\n/g, '\r');
     str = str.replace(/\n/g, '\r');
     str = str.replace(/ +\r/g, '\r');
   }
   
-  // Doing copy by having the launch.js read message
-  // and then copy onto clipboard
-  if (this.appConn.isConnected) {
-    port.postMessage({ action: 'copy', data: str });
+  var self = this;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(str).catch(function() { self.copyWithSelection(str); });
+  } else {
+    this.copyWithSelection(str);
   }
+};
+
+pttchrome.App.prototype.copyWithSelection = function(str) {
+  var selection = window.getSelection();
+  var ranges = [];
+  for (var i = 0; i < selection.rangeCount; ++i) ranges.push(selection.getRangeAt(i).cloneRange());
+  var input = document.createElement('textarea');
+  input.value = str;
+  input.style.position = 'fixed';
+  input.style.left = '-10000px';
+  document.body.appendChild(input);
+  input.select();
+  var copied = document.execCommand('copy');
+  input.remove();
+  this.setInputAreaFocus();
+  selection.removeAllRanges();
+  ranges.forEach(function(range) { selection.addRange(range); });
+  if (!copied) window.alert(i18n('clipboard_copyFailed'));
 };
 
 pttchrome.App.prototype.doCopyAnsi = function() {
@@ -538,28 +498,19 @@ pttchrome.App.prototype.doCopyAnsi = function() {
 };
 
 pttchrome.App.prototype.doPaste = function() {
-  var port = this.appConn.appPort;
-  if (!port)
-    return;
-  
-  // Doing paste by having the launch.js read the clipboard data
-  // and then send the content on the onPasteDone
-  if (this.appConn.isConnected) {
-    port.postMessage({ action: 'paste' });
+  var self = this;
+  if (navigator.clipboard && navigator.clipboard.readText) {
+    navigator.clipboard.readText().then(function(text) {
+      self.onPasteDone(text);
+    }).catch(function() { window.alert(i18n('clipboard_pasteFailed')); });
+  } else {
+    window.alert(i18n('clipboard_pasteFailed'));
   }
 };
 
 pttchrome.App.prototype.onPasteDone = function(content) {
   //this.conn.convSend(content);
-  this.view.onTextInput(content, true);
-};
-
-pttchrome.App.prototype.onSymFont = function(content) {
-  var css = '@font-face { font-family: MingLiUNoGlyph; src: url('+content.data+'); }';
-  var style = document.createElement('style');
-  style.type = 'text/css';
-  style.innerHTML = css;
-  document.getElementsByTagName('head')[0].appendChild(style);
+  if (this.conn.isConnected) this.view.onTextInput(content, true);
 };
 
 pttchrome.App.prototype.doSelectAll = function() {

@@ -96,9 +96,6 @@ locale.en_US = {
   },
 
   // options
-  "options_openInPackagedApp": {
-    "message": "Launch PttChrome in packaged app."
-  },
   "options_closeQuery": {
     "message": "Ask before closing tab."
   },
@@ -212,9 +209,6 @@ locale.en_US = {
   "autologin_password": {
     "message": "Password"
   },
-  "autologin_warning": {
-    "message": "Login info is not encrypted, DO NOT use on a public machine"
-  },
 
   // blacklist drive sync
   "blacklist_driveSyncTitle": {
@@ -257,49 +251,20 @@ locale.en_US = {
   },
 
   // about page
-  "about_review": {
-    "message": "Review app"
-  },
   "about_feedback": {
     "message": "Send feedback"
   },
   "about_fbpage": {
     "message": "Facebook"
   },
-  "about_promote": {
-    "message": "If you like this app, also take a look at "
-  },
   "about_version_title": {
     "message": "Version"
   },
-  "about_version": {
-    "message": "webapp15 8/27/2024"
-  },
+
   "about_new_title": {
     "message": "What's new"
   },
-  "about_new_content": {
-    "message": [
-      'Allow setting keepAlive from url, append ?keepAlive=[SECONDS] to the URL',
-      'Added SSH connection to PTT, append ?ssh=true to the URL',
-      'Limited easy reading mode to ptt.cc only',
-      'Added features to load/backup blacklist with Google Drive',
-      'Suggest to try port 443 when disconnected',
-      'Settings to answer duplicated connection query in autologin settings',
-      'Added Live Article Helper in context menu to auto refresh pushthread, or use Alt + r',
-      'Switching easy reading mode in settings no longer require a restart',
-      'Disabled hammerjs that caused mouse related issue on old Chrome verisons',
-      'Fixing bug with spacebar when in chinese input mode and easy reading mode',
-      'Fixing ssh connection problem with kex',
-      'Added option to ask before closing',
-      'Added setting to send right arrow key to left mouse button',
-      'Added option to turn on live update with END',
-      'Middle mouse button click has new option to do paste',
-      'Added option to enable copy on select',
-      'Added Quick Search in settings and context menu (thanks to abccbaandy)',
-      'Always use SSH to connect to ptt.cc'
-    ]
-  },
+
 
   // alerts
   "alert_connectionHeader": {
@@ -311,37 +276,13 @@ locale.en_US = {
   "alert_connectionReconnect": {
     "message": "Reconnect (ENTER)"
   },
-  "alert_connectionPortOption1": {
-    "message": "or"
-  },
-  "alert_connectionPortOption2": {
-    "message": "Try with port 443"
-  },
 
   // notifications
   "notification_said": {
     "message": "says:"
   },
 
-  "getAppBtn": {
-    "message": "Get from Chrome Web Store"
-  },
-  "alreadyInstalledHint1": {
-    "message": "Already have PttChrome installed?"
-  },
-  "alreadyInstalledHint2": {
-    "message": "Please set Google Chrome as your default browser and launch PttChrome from \"批\" app icon"
-  },
-  "alreadyInstalledHint3": {
-    "message": "OR"
-  },
-  "alreadyInstalledHint4": {
-    "message": "Add http://iamchucky.github.io/PttChrome/ to Chrome bookmarks and launch PttChrome from the bookmark"
-  },
 
-  "input_sitePlaceholder": {
-    "message": "input URL here and then press ENTER"
-  },
 
   // input helper
   "inputHelperTitle": {
@@ -453,3 +394,23 @@ locale.en_US = {
   }
 
 };
+
+// Modified 2026-10-19: standalone connection and browser services.
+locale.en_US.options_webSocketUrl = { message: "Secure connection / proxy URL (blank: official service)" };
+locale.en_US.options_googleDriveClientId = { message: "Google Drive OAuth client ID (optional)" };
+locale.en_US.connection_endpointHelp = { message: "PTT restricts third-party website origins. If direct connection fails, enter a trusted wss:// proxy, save and reconnect. The proxy handles login and article data. GitHub Pages cannot host a proxy." };
+locale.en_US.connection_failed = { message: "Connection failed or closed. The official service may reject third-party website origins. Configure a working, trusted secure WebSocket proxy in Settings and reconnect." };
+locale.en_US.connection_connecting = { message: "Connecting…" };
+locale.en_US.connection_invalidUrl = { message: "Enter a complete wss:// URL without embedded credentials or a # fragment." };
+locale.en_US.storage_failed = { message: "Browser settings could not be read or saved. Changes will be kept in memory and may be lost when this page closes." };
+locale.en_US.clipboard_copyFailed = { message: "Copy failed. Please use the browser copy command." };
+locale.en_US.clipboard_pasteFailed = { message: "Clipboard access failed. Focus the terminal and use Ctrl+V or Ctrl+Shift+V." };
+locale.en_US.drive_setup = { message: "Optional backup: enter your own Google web OAuth client ID, enable the Drive API and authorize this site origin in Google Cloud. Only backups accessible to this client appear. The original App authorization does not transfer." };
+locale.en_US.drive_failed = { message: "Google Drive failed. Check your connection, client configuration and authorization." };
+locale.en_US.drive_ready = { message: "Google authorization is ready. Click Authorize again." };
+locale.en_US.drive_selectFile = { message: "Choose a blacklist backup" };
+locale.en_US.drive_authorizeFirst = { message: "Authorize with Google first. Expired access requires authorization again." };
+locale.en_US.autologin_warning = { message: "Auto-login credentials are saved in this browser’s site data, not uploaded to GitHub or Google Drive. Clearing site data removes them. Original Chrome App settings do not transfer automatically." };
+locale.en_US.input_sitePlaceholder = { message: "ptt.cc, ptt2.cc or a complete wss:// connection URL" };
+locale.en_US.about_version = { message: "Standalone WebSocket 2026.10.19" };
+locale.en_US.about_new_content = { message: ["Preserves the original terminal, mouse browsing, easy reading, blacklist and input helpers.","Uses secure WebSockets, browser settings storage and clipboard instead of a Chrome App.","Configure your own trusted wss:// proxy in General settings if PTT rejects the website origin.","Google Drive blacklist backup requires your own OAuth client, separate from the original App.","Updated article status recognition. Original App credentials and settings need to be entered again."] };

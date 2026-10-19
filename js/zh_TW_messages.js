@@ -96,9 +96,6 @@
   },
 
   // options
-  "options_openInPackagedApp": {
-    "message": "'批' 圖示會在獨立視窗開啟 PttChrome"
-  },
   "options_closeQuery": {
     "message": "關閉分頁時先詢問"
   },
@@ -209,9 +206,6 @@
   "autologin_password": {
     "message": "密碼"
   },
-  "autologin_warning": {
-    "message": "帳號密碼沒有加密儲存, 千萬不要在公用電腦上使用"
-  },
 
   // blacklist drive sync
   "blacklist_driveSyncTitle": {
@@ -254,49 +248,20 @@
   },
 
   // about page
-  "about_review": {
-    "message": "給評分"
-  },
   "about_feedback": {
     "message": "客服信箱"
   },
   "about_fbpage": {
     "message": "粉絲頁"
   },
-  "about_promote": {
-    "message": "喜歡這個 APP 的話也請看看鄉民朝聖套件 "
-  },
   "about_version_title": {
     "message": "版本"
   },
-  "about_version": {
-    "message": "webapp15 8/27/2024"
-  },
+
   "about_new_title": {
     "message": "新功能"
   },
-  "about_new_content": {
-    "message": [
-      '網址設定 keepAlive 參數, 只要在網址後面加上 ?keepAlive=[幾秒]',
-      '加入了 SSH 連到 PTT 的功能, 只要在網址後面加上 ?ssh=true',
-      '好讀模式只限於 ptt.cc 上使用',
-      '黑名單可用 Google Drive 來讀取或備份',
-      '斷線提示用 443 端口連線',
-      '自動登入設定頁面可設定是否自動刪除其他重複連線',
-      '右鍵選單新增 Live 文小幫手來自動更新推文, 也可用 Alt + r 來啟動',
-      '設定中切換好讀模式不用再重新整理即可切換',
-      '暫時停用 hammerjs 避免在舊的 Chrome 造成滑鼠圈選的問題',
-      '修正中文輸入法時好讀模式的空白鍵的問題',
-      '修正 ssh 連線 kex 的問題',
-      '加入了關閉分頁先詢問的選項',
-      '加入了滑鼠左鍵送出右方向鍵的選項',
-      '加入了 END 啟用即時更新的選項',
-      '滑鼠中鍵可以設定執行貼上功能',
-      '加入了選取自動複製文字的選項',
-      '新增了快速搜尋的功能 (感謝abccbaandy)',
-      '只使用 SSH 連到 ptt.cc'
-    ]
-  },
+
 
   // alerts
   "alert_connectionHeader": {
@@ -308,37 +273,13 @@
   "alert_connectionReconnect": {
     "message": "重新連線 (ENTER)"
   },
-  "alert_connectionPortOption1": {
-    "message": "或"
-  },
-  "alert_connectionPortOption2": {
-    "message": "用443端口連線"
-  },
 
   // notifications
   "notification_said": {
     "message": "說:"
   },
 
-  "getAppBtn": {
-    "message": "從 Chrome 程式商店下載"
-  },
-  "alreadyInstalledHint1": {
-    "message": "已經有安裝 PttChrome 了嗎？"
-  },
-  "alreadyInstalledHint2": {
-    "message": "請將預設瀏覽器改為 Google Chrome 後由 \"批\" 圖示開啟 PttChrome"
-  },
-  "alreadyInstalledHint3": {
-    "message": "或是"
-  },
-  "alreadyInstalledHint4": {
-    "message": "把 http://iamchucky.github.io/PttChrome/ 加入 Chrome 書籤並由書籤開啓 PttChrome"
-  },
 
-  "input_sitePlaceholder": {
-    "message": "在此輸入站台地址後按 ENTER"
-  },
 
   // input helper
   "inputHelperTitle": {
@@ -450,3 +391,23 @@
   }
 
 };
+
+// Modified 2026-10-19: standalone connection and browser services.
+locale.zh_TW.options_webSocketUrl = { message: "自訂安全連線／代理網址（留空使用官方服務）" };
+locale.zh_TW.options_googleDriveClientId = { message: "Google Drive OAuth 用戶端 ID（選填）" };
+locale.zh_TW.connection_endpointHelp = { message: "PTT 限制第三方網站來源。若官方直連失敗，請填入你信任的 wss:// 代理網址，儲存後按重新連線。代理會經手登入與文章資料。GitHub Pages 本身無法提供代理。" };
+locale.zh_TW.connection_failed = { message: "連線未成功或已中斷。官方服務可能拒絕第三方網站來源；請在設定填入可用且信任的安全 WebSocket 代理，再重新連線。" };
+locale.zh_TW.connection_connecting = { message: "正在連線…" };
+locale.zh_TW.connection_invalidUrl = { message: "請輸入完整的 wss:// 安全連線網址，不可含帳密或 # 片段。" };
+locale.zh_TW.storage_failed = { message: "瀏覽器無法讀取或儲存設定，本次將暫存於記憶體；關閉網頁後可能無法保留。" };
+locale.zh_TW.clipboard_copyFailed = { message: "複製未成功，請使用瀏覽器的複製功能。" };
+locale.zh_TW.clipboard_pasteFailed = { message: "無法讀取剪貼簿。請點回終端機，使用 Ctrl+V 或 Ctrl+Shift+V 貼上。" };
+locale.zh_TW.drive_setup = { message: "雲端備份選用：請填入自己的 Google 網頁應用程式用戶端 ID，在 Google Cloud 啟用 Drive API，並將本站來源加入「已授權的 JavaScript 來源」。檔案清單只列出此用戶端可存取的備份；原 App 的授權不會自動移轉。" };
+locale.zh_TW.drive_failed = { message: "Google Drive 操作未成功，請確認網路、用戶端設定及授權。" };
+locale.zh_TW.drive_ready = { message: "Google 授權元件已就緒，請再按一次授權。" };
+locale.zh_TW.drive_selectFile = { message: "選擇黑名單備份" };
+locale.zh_TW.drive_authorizeFirst = { message: "請先按「授權」登入 Google；授權過期時需重新授權。" };
+locale.zh_TW.autologin_warning = { message: "自動登入帳密會儲存在此瀏覽器的網站資料中，不會上傳 GitHub 或 Google Drive；清除網站資料會一併刪除。原 Chrome App 設定不會自動移轉。" };
+locale.zh_TW.input_sitePlaceholder = { message: "ptt.cc、ptt2.cc 或完整的 wss:// 連線網址" };
+locale.zh_TW.about_version = { message: "Standalone WebSocket 2026.10.19" };
+locale.zh_TW.about_new_content = { message: ["保留 PttChrome 原有介面、滑鼠瀏覽、好讀模式、黑名單與輸入小幫手。","不再依賴 Chrome App：使用安全 WebSocket、瀏覽器設定儲存與剪貼簿。","一般設定可填入自己的 wss:// 代理；PTT 的來源限制可能阻擋官方直連。","Google Drive 黑名單備份需自行設定 OAuth 用戶端，與原 App 授權分開。","已修正新版文章狀態列辨識；原 App 的帳密與設定需重新輸入。"] };

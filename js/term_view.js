@@ -76,6 +76,11 @@ function TermView(rowCount) {
   this.BBSWin = document.getElementById('BBSWindow');
   this.picPreview = document.getElementById('picPreview');
   this.picLoading = document.getElementById('picLoading');
+  this.picPreviewMessage = document.getElementById('picPreviewMessage');
+  this.imagePreview = new lib.ImagePreview();
+  this.picPreviewRequest = 0;
+  this.picPreviewSource = '';
+  this.picPreviewEventsReady = false;
   this.enablePicPreview = true;
   this.scaleX = 1;
   this.scaleY = 1;
@@ -155,6 +160,7 @@ function TermView(rowCount) {
     if (self.bbscore.modalShown || self.bbscore.contextMenuShown)
       return;
     if (document.getElementById('connectionAlert').style.display != 'none') {
+      if (e.target.closest('#connectionAlert')) return;
       if (e.keyCode == 13)
         document.getElementById('connectionAlertReconnect').click();
       if (e.keyCode == 27)
@@ -169,8 +175,7 @@ function TermView(rowCount) {
       return; // Shift Ctrl Alt (19)
     if (self.bbscore.modalShown || self.bbscore.contextMenuShown)
       return;
-    if (document.getElementById('connectionAlert').style.display != 'none' && 
-      (e.keyCode == 13 || e.keyCode == 27)) {
+    if (document.getElementById('connectionAlert').style.display != 'none') {
       return;
     }
     if (self.useEasyReadingMode && self.buf.startedEasyReading && 
@@ -248,7 +253,8 @@ TermView.prototype = {
   },
 
   prePicRel: function(str) {
-    if(str.search(/\.(bmp|gif|jpe?g|png)$/i) == -1)
+    var image = lib.ImagePreview.resolve(str);
+    if (!image || !image.src)
       return ' type="w"';
     else
       return ' type="p"';
@@ -555,11 +561,9 @@ TermView.prototype = {
         this.buf.prevPageState = this.buf.pageState;
       }
 
+      this.imagePreview.prune();
+      this.hidePicPreview();
       if (this.enablePicPreview) {
-        // hide preview if any update
-        this.picPreviewShouldShown = false;
-        this.picPreview.style.display = 'none';
-        this.picLoading.style.display = 'none';
         this.setupPicPreviewOnHover();
       }
     }
@@ -1147,38 +1151,52 @@ TermView.prototype = {
       return inputChar;
   },
 
+  hidePicPreview: function() {
+    this.picPreviewRequest++;
+    this.picPreviewShouldShown = false;
+    this.picPreviewSource = '';
+    this.picPreview.style.display = 'none';
+    this.picLoading.style.display = 'none';
+    this.picPreviewMessage.style.display = 'none';
+  },
+
   setupPicPreviewOnHover: function() {
+    if (this.picPreviewEventsReady) return;
+    this.picPreviewEventsReady = true;
     var self = this;
-    var aNodes = $(".main a[href^='http://ppt.cc/'], .main a[type='p'], .main a[href^='http://imgur.com/'], .main a[href^='https://imgur.com/']")
-                  .not("a[href^='http://imgur.com/a/'], a[href^='https://imgur.com/a/'], a[href^='http://imgur.com/gallery/'], a[href^='https://imgur.com/gallery/']");
-    var onover = function(elem) {
-      var setPicPreviewSrc = function(src) {
-        var currSrc = self.picPreview.getAttribute('src');
-        if (src !== currSrc) {
-          self.picLoading.style.display = 'block';
-          self.picPreview.setAttribute('src', src);
-        } else {
+    this.mainContainer.addEventListener('mouseover', function(e) {
+      var anchor = e.target.closest('a');
+      if (!self.enablePicPreview || !anchor || !self.mainContainer.contains(anchor) || anchor.contains(e.relatedTarget)) return;
+      var image = lib.ImagePreview.resolve(anchor.href);
+      if (!image || !image.src) return;
+      self.hidePicPreview();
+      var request = self.picPreviewRequest;
+      self.picPreviewSource = image.src;
+      self.picPreviewShouldShown = true;
+      self.picLoading.style.display = 'block';
+      self.bbscore.curX = e.clientX;
+      self.bbscore.curY = e.clientY;
+      self.bbscore.updatePicPreviewPosition();
+      self.imagePreview.load(image.src).then(function(loadedImage) {
+        if (request !== self.picPreviewRequest || !anchor.isConnected || !self.enablePicPreview) return;
+        self.picPreview.src = loadedImage.src;
+        if (self.picPreview.complete && self.picPreview.naturalWidth) {
           self.picPreview.style.display = 'block';
+          self.picLoading.style.display = 'none';
+          self.bbscore.updatePicPreviewPosition();
         }
-        self.picPreviewShouldShown = true;
-      };
-      return function(e) {
-        var href = elem.getAttribute('href');
-        var type = elem.getAttribute('type');
-        var src = (type == 'p') ? href : (href.indexOf('imgur.com') > 0) ? href.replace(/(http(s)?):\/\/imgur.com/, "$1://i.imgur.com") + '.jpg' : href + '@.jpg';
-        setPicPreviewSrc(src);
-      };
-    };
-    var onout = function(e) {
-      self.picPreviewShouldShown = false;
-      self.picPreview.style.display = 'none';
-      self.picLoading.style.display = 'none';
-    };
-    for (var i = 0; i < aNodes.length; ++i) {
-      var aNode = aNodes[i];
-      aNode.addEventListener('mouseover', onover(aNode));
-      aNode.addEventListener('mouseout', onout);
-    }
+      }).catch(function() {
+        if (request !== self.picPreviewRequest || !anchor.isConnected || !self.enablePicPreview) return;
+        self.picLoading.style.display = 'none';
+        self.picPreviewMessage.textContent = i18n('image_loadFailed');
+        self.picPreviewMessage.style.display = 'block';
+        self.bbscore.updatePicPreviewPosition();
+      });
+    });
+    this.mainContainer.addEventListener('mouseout', function(e) {
+      var anchor = e.target.closest('a');
+      if (anchor && !anchor.contains(e.relatedTarget)) self.hidePicPreview();
+    });
   },
 
   showWaterballNotification: function() {
@@ -1211,6 +1229,18 @@ TermView.prototype = {
     };
   },
 
+  resetEasyReadingDisplay: function() {
+    this.mainContainer.style.paddingBottom = '';
+    this.lastRowIndex = 22;
+    this.lastRowDiv.style.display = '';
+    this.replyRowDiv.style.display = '';
+    this.fbSharingDiv.style.display = '';
+    this.hideFbSharing = true;
+    this.buf.pageLines = [];
+    this.buf.pageWrappedLines = [];
+    this.buf.prevPageState = 0;
+  },
+
   populateEasyReadingPage: function() {
     if (this.buf.pageState == 3 && this.buf.prevPageState == 3) {
       this.mainContainer.style.paddingBottom = '1em';
@@ -1227,7 +1257,7 @@ TermView.prototype = {
         var rowOffset = this.buf.pageLines.length-1;
         var beginIndex = 1;
         var atLastPage = false;
-        if ((result.pageIndex == result.pageTotal && result.pagePercent == 100) || 
+        if (result.isEnd ||
             result.rowIndexStart != this.actualRowIndex) { // at last page
           atLastPage = result.rowIndexStart != this.actualRowIndex;
           // find num of rows between actualRowIndex and rowIndexStart
@@ -1251,7 +1281,7 @@ TermView.prototype = {
           }
           this.htmlRowStrArray[i] = this.htmlRowStrArray[i].replace(/(?: arow="\d+")* srow="\d+">/g, ' arow="'+this.actualRowIndex+'" srow="'+(rowOffset+i)+'">');
         }
-        this.mainContainer.innerHTML += this.htmlRowStrArray.slice(beginIndex, -1).join('');
+        this.mainContainer.insertAdjacentHTML('beforeend', this.htmlRowStrArray.slice(beginIndex, -1).join(''));
         this.findPttWebUrlAndInitFbSharing();
         this.embedPicAndVideo();
         // deep clone lines for selection (getRowText and get ansi color)
@@ -1334,58 +1364,75 @@ TermView.prototype = {
     }
   },
 
-  embedPicAndVideo: function() {
-    var aNodes = $(".main a[type='p'], .main a[href^='http://imgur.com/'], .main a[href^='https://imgur.com/']");
-    var getImgurAlbumInfoCallback = function(data){
-      var images = data.data.images;
-      var albumId = data.data.id;
-      images.forEach(function(i){
-        var theANodes = $('a[data-imgur-aubum-id="'+albumId+'"]');
-        var src = i.link;
-        var imgNode = document.createElement('img');
-        imgNode.setAttribute('class', 'easyReadingImg');
-        imgNode.setAttribute('src', src);
-        imgNode.setAttribute('data-imgur-photo-id', i.id);
-        imgNode.style.webkitTransform = 'scale('+Math.floor(1/this.scaleX*100)/100+','+Math.floor(1/this.scaleY*100)/100+')';
-        // 因為無法指定 append 的行數，但畫面可能出現重複的 url，加過一次後，把 id 存起來，避免重複 append
-        var hasImgurImageIdSelector = ':has(img[data-imgur-photo-id="'+i.id+'"])';
-        theANodes.parent().not(hasImgurImageIdSelector).append(imgNode);
-        theANodes.attr('view_shown', 'true');
+  embedImage: function(anchor, src) {
+    var self = this;
+    var status = document.createElement('span');
+    status.className = 'easyReadingImageStatus';
+    status.textContent = i18n('image_loading');
+    anchor.parentNode.appendChild(status);
+    this.imagePreview.whenVisible(status, function() {
+      self.imagePreview.load(src).then(function(loadedImage) {
+        if (!status.isConnected) return;
+        var img = loadedImage.cloneNode(false);
+        img.className = 'easyReadingImg';
+        img.loading = 'lazy';
+        img.alt = i18n('image_loadFailed');
+        img.style.webkitTransform = 'scale('+Math.floor(1/self.scaleX*100)/100+','+Math.floor(1/self.scaleY*100)/100+')';
+        status.parentNode.replaceChild(img, status);
+      }).catch(function() {
+        if (status.isConnected) status.textContent = i18n('image_loadFailed');
       });
-    };
-    var setAuthorizationHeaderForImgurApi = function(xhr) { xhr.setRequestHeader('Authorization', 'Client-ID 66f9b381f0785a5'); };
+    });
+  },
 
+  embedImgurAlbum: function(anchor, albumId) {
+    var self = this;
+    var status = document.createElement('span');
+    status.className = 'easyReadingImageStatus';
+    status.textContent = i18n('image_loading');
+    anchor.parentNode.appendChild(status);
+    this.imagePreview.whenVisible(status, function() {
+      $.ajax({
+        url: 'https://api.imgur.com/3/album/' + albumId,
+        type: 'GET',
+        dataType: 'json',
+        timeout: 10000,
+        beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'Client-ID 66f9b381f0785a5'); }
+      }).done(function(data) {
+        if (!status.isConnected) return;
+        var images = data && data.data && data.data.images;
+        if (!Array.isArray(images)) {
+          status.textContent = i18n('image_loadFailed');
+          return;
+        }
+        var seen = {};
+        var count = 0;
+        images.forEach(function(image) {
+          var resolved = lib.ImagePreview.resolve(image && image.link);
+          if (resolved && resolved.src && !seen[resolved.src]) {
+            seen[resolved.src] = true;
+            self.embedImage(anchor, resolved.src);
+            count++;
+          }
+        });
+        if (count) status.remove();
+        else status.textContent = i18n('image_loadFailed');
+      }).fail(function() {
+        if (status.isConnected) status.textContent = i18n('image_loadFailed');
+      });
+    });
+  },
+
+  embedPicAndVideo: function() {
+    var aNodes = this.mainContainer.querySelectorAll('a');
     for (var i = 0; i < aNodes.length; ++i) {
       var aNode = aNodes[i];
-      if (aNode.getAttribute('view_shown')) {
-        continue;
-      }
-      var href = aNode.getAttribute('href');
-      var isImgurAlbum = href.match('imgur\.com\/\(a|gallery\)\/\(\\w\+\)');
-      if (isImgurAlbum) {
-        var imgurAlbumId = isImgurAlbum[2];
-        var imgurAlbumApi = 'https://api.imgur.com/3/album/'+imgurAlbumId;
-        aNode.setAttribute('data-imgur-aubum-id', imgurAlbumId);
-        $.ajax({
-          url: imgurAlbumApi,
-          type: 'GET',
-          dataType: 'json',
-          success: getImgurAlbumInfoCallback,
-          beforeSend: setAuthorizationHeaderForImgurApi // need to send auth header to access public resources
-        });
-      } else {
-        var type = aNode.getAttribute('type');
-        var src = (type == 'p') ? href : (href.indexOf('imgur.com') > 0) ? href.replace(/(http(s)?):\/\/imgur.com/, "$1://i.imgur.com") + '.jpg' : '';
-        if (src) {
-          var imgNode = document.createElement('img');
-          imgNode.setAttribute('class', 'easyReadingImg');
-          imgNode.setAttribute('src', src);
-          imgNode.style.webkitTransform = 'scale('+Math.floor(1/this.scaleX*100)/100+','+Math.floor(1/this.scaleY*100)/100+')';
-          aNode.parentNode.appendChild(imgNode);
-        }
-
-        aNode.setAttribute('view_shown', 'true');
-      }
+      if (aNode.getAttribute('view_shown')) continue;
+      var image = lib.ImagePreview.resolve(aNode.href);
+      if (!image) continue;
+      aNode.setAttribute('view_shown', 'true');
+      if (image.albumId) this.embedImgurAlbum(aNode, image.albumId);
+      else this.embedImage(aNode, image.src);
     }
 
     var vNodes = document.querySelectorAll(".main a");

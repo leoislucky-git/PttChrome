@@ -159,7 +159,8 @@ pttchrome.App = function(onInitializedCallback) {
     self.onWindowResize();
   };
   this.view.picPreview.addEventListener('load', function(e) {
-    if (self.view.picPreviewShouldShown) {
+    if (self.view.picPreviewShouldShown && self.view.enablePicPreview &&
+        self.view.picPreview.getAttribute('src') === self.view.picPreviewSource) {
       self.view.picPreview.style.display = 'block';
       self.view.picLoading.style.display = 'none';
       self.updatePicPreviewPosition();
@@ -258,7 +259,7 @@ pttchrome.App.prototype.onData = function(data) {
   }
 };
 
-pttchrome.App.prototype.onClose = function() {
+pttchrome.App.prototype.onClose = function(info) {
   dumpLog(DUMP_TYPE_LOG, "pttchrome onClose");
   if (this.timerEverySec) {
     this.timerEverySec.cancel();
@@ -274,7 +275,10 @@ pttchrome.App.prototype.onClose = function() {
   this.connectState = 2;
   this.idleTime = 0;
 
-  $('#connectionAlertText').text(i18n('connection_failed'));
+  var message = !info ? 'connection_failed' : info.cause === 'timeout' ? 'connection_timeout' :
+    info.phase === 'connecting' ? 'connection_handshakeFailed' : 'connection_interrupted';
+  $('#connectionAlertText').text(i18n(message));
+  this.updateConnectionDiagnostics(info);
   $('#connectionAlert').show();
   this.updateTabIcon('disconnect');
 };
@@ -388,17 +392,35 @@ pttchrome.App.prototype.switchToEasyReadingMode = function(doSwitch) {
     this.buf.pageLines = [];
     if (this.buf.pageState == 3) this.view.conn.send('\x1b[D\x1b[C'); //this.view.conn.send('qr');
   } else {
-    this.view.mainContainer.style.paddingBottom = '';
-    this.view.lastRowIndex = 22;
-    this.view.lastRowDiv.style.display = '';
-    this.view.replyRowDiv.style.display = '';
-    this.view.fbSharingDiv.style.display = '';
-    this.view.hideFbSharing = true;
-    // clear the deep cloned copy of lines
-    this.buf.pageLines = [];
+    this.view.resetEasyReadingDisplay();
   }
   // request the full screen
   this.view.conn.send('^L'.unescapeStr());
+};
+
+pttchrome.App.prototype.updateConnectionDiagnostics = function(info) {
+  var details = document.getElementById('connectionDiagnostics');
+  details.hidden = !info;
+  details.open = false;
+  var text = '';
+  if (info) {
+    var yesNo = function(value) {
+      return value === null ? i18n('connection_unknown') : i18n(value ? 'connection_yes' : 'connection_no');
+    };
+    text = [
+      pttchrome.APP_NAME,
+      i18n('connection_time') + ': ' + info.time,
+      i18n('connection_endpoint') + ': ' + info.endpoint,
+      i18n('connection_phase') + ': ' + i18n('connection_phase_' + info.phase),
+      i18n('connection_cause') + ': ' + i18n('connection_cause_' + info.cause),
+      i18n('connection_code') + ': ' + (info.code === null ? i18n('connection_unknown') : info.code),
+      i18n('connection_clean') + ': ' + yesNo(info.wasClean),
+      i18n('connection_hidden') + ': ' + yesNo(info.hidden),
+      i18n('connection_elapsed') + ': ' + info.elapsedSeconds
+    ].join('\n');
+    if (info.code === 1006) text += '\n\n' + i18n('connection_abnormalClose');
+  }
+  document.getElementById('connectionDiagnosticsText').textContent = text;
 };
 
 pttchrome.App.prototype.setupConnectionAlert = function() {
@@ -407,11 +429,17 @@ pttchrome.App.prototype.setupConnectionAlert = function() {
   $('#connectionAlertText').text(i18n('alert_connectionText'));
   $('#connectionAlertReconnect').text(i18n('alert_connectionReconnect'));
   $('#connectionSettings').text(i18n('menu_settings'));
+  $('#connectionDiagnosticsSummary').text(i18n('connection_details'));
+  $('#connectionDiagnosticsCopy').text(i18n('connection_copyDetails'));
+  $('#connectionDiagnosticsPrivacy').text(i18n('connection_detailsPrivacy'));
   var self = this;
   $('#connectionAlertReconnect').click(function() {
     self.connect(self.connectedUrl.site);
   });
   $('#connectionSettings').click(function() { self.doSettings(); });
+  $('#connectionDiagnosticsCopy').click(function() {
+    self.doCopy(document.getElementById('connectionDiagnosticsText').textContent);
+  });
   $('#connectionAlertDismiss').click(function() { $('#connectionAlert').hide(); });
 };
 
@@ -1059,6 +1087,7 @@ pttchrome.App.prototype.onPrefChange = function(pref, name) {
       break;
     case 'enablePicPreview':
       this.view.enablePicPreview = pref.get(name);
+      if (!this.view.enablePicPreview) this.view.hidePicPreview();
       break;
     case 'enableNotifications':
       this.view.enableNotifications = pref.get(name);
@@ -1280,12 +1309,6 @@ pttchrome.App.prototype.mouse_move = function(e) {
     return;
   }
 
-  if (this.view.enablePicPreview && this.view.picLoading.style.display != 'none') {
-    this.view.picLoading.style.cssText += [
-      'left:'+(e.clientX + 20)+'px',
-      'top:'+e.clientY+'px'
-      ].join(';');
-  }
   this.updatePicPreviewPosition();
 
   if (this.buf.useMouseBrowsing) {
@@ -1728,6 +1751,12 @@ pttchrome.App.prototype.setBBSCmd = function(cmd, cmdhandler) {
 };
 
 pttchrome.App.prototype.updatePicPreviewPosition = function() {
+  var indicators = [this.view.picLoading, this.view.picPreviewMessage];
+  for (var i = 0; i < indicators.length; ++i) {
+    if (indicators[i].style.display === 'none') continue;
+    indicators[i].style.left = Math.max(0, Math.min(this.curX + 20, window.innerWidth - indicators[i].offsetWidth - 10)) + 'px';
+    indicators[i].style.top = Math.max(0, Math.min(this.curY, window.innerHeight - indicators[i].offsetHeight - 10)) + 'px';
+  }
   if (this.view.picPreview.style.display == 'none')
     return;
   var mouseHeight = this.curY;
@@ -1747,7 +1776,7 @@ pttchrome.App.prototype.updatePicPreviewPosition = function() {
   var fontSize = this.view.chh;
   this.view.picPreview.style.cssText += [
     'font-size:'+fontSize+'px',
-    'left:'+(curX+20)+'px',
+    'left:'+Math.max(0, Math.min(curX+20, window.innerWidth-this.view.picPreview.clientWidth-10))+'px',
     'top:'+imgTop+'px'
     ].join(';');
 };

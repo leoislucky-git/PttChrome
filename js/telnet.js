@@ -46,8 +46,7 @@ function TelnetConnection(app) {
   this.socket = new lib.WebSocketConnection({
     open: function() { self.app.onConnect(); },
     data: function(data) { self.onDataAvailable(data); },
-    close: function() { self.isConnected = false; self.app.onClose(); },
-    error: function(message) { self.app.showConnectionError(message); }
+    close: function(info) { self.isConnected = false; self.app.onClose(info); }
   });
 
   this.state = STATE_DATA;

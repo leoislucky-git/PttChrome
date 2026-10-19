@@ -242,7 +242,14 @@
         <button id="connectionAlertReconnect" type="button" class="btn btn-danger"></button>
       </p>
       <button id="connectionSettings" type="button" class="btn btn-default"></button>
+      <details id="connectionDiagnostics" class="nomouse_command" hidden>
+        <summary id="connectionDiagnosticsSummary"></summary>
+        <pre id="connectionDiagnosticsText"></pre>
+        <p id="connectionDiagnosticsPrivacy"></p>
+        <button id="connectionDiagnosticsCopy" type="button" class="btn btn-default"></button>
+      </details>
     </div>
+    <span id="picPreviewMessage" role="status"></span>
     <img id="picPreview" src='' style='max-height:80%; max-width:90%'></img>
     <i id="picLoading" class="glyphicon glyphicon-refresh glyphicon-refresh-animate" style="display:none; position:absolute; z-index:2"></i>
 

@@ -682,7 +682,11 @@ span {
 
   width: 400px;
   left: 50%;
-  margin-left: -200px;
+  margin-left: 0;
+  max-width: calc(100vw - 30px);
+  max-height: calc(100vh - 30px);
+  overflow-y: auto;
+  transform: translateX(-50%);
   box-shadow: 0px 0px 20px black;
 }
 
@@ -722,3 +726,35 @@ span {
   font-family: MingLiUNoGlyph;
   src: url('../fonts/symmingliu.woff');
 }
+
+#picPreview, #picLoading, #picPreviewMessage {
+  pointer-events: none;
+}
+#picPreviewMessage {
+  display: none;
+  position: absolute;
+  z-index: 4;
+  max-width: min(320px, 90vw);
+  padding: 6px 10px;
+  background: #333;
+  color: white;
+  border-radius: 4px;
+  font: 14px sans-serif;
+}
+.easyReadingImageStatus {
+  display: block;
+  padding: 0.5em;
+  color: #aaa;
+  white-space: normal;
+  font: 16px sans-serif;
+}
+
+#connectionDiagnostics { margin-top: 12px; }
+#connectionDiagnostics summary { cursor: pointer; }
+#connectionDiagnostics pre {
+  margin-top: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+#connectionDiagnostics p { font-size: 12px; }

@@ -23,24 +23,40 @@ lib.WebSocketConnection.prototype.connect = function(url) {
   this.disconnect();
   var self = this;
   var socket;
+  var startedAt = Date.now();
+  var opened = false;
+  var cause = 'closed';
+  var closeInfo = function(event) {
+    return {
+      endpoint: url,
+      phase: opened ? 'connected' : 'connecting',
+      cause: cause,
+      code: event ? event.code : null,
+      wasClean: event ? event.wasClean : null,
+      hidden: document.hidden,
+      time: new Date().toISOString(),
+      elapsedSeconds: Math.round((Date.now() - startedAt) / 1000)
+    };
+  };
   try {
     socket = new WebSocket(url);
   } catch (error) {
-    self.callbacks.error(error.message);
-    self.callbacks.close();
+    cause = 'creation_failed';
+    self.callbacks.close(closeInfo());
     return;
   }
   this.socket = socket;
   socket.binaryType = 'arraybuffer';
   this.timeout = window.setTimeout(function() {
     if (self.socket === socket && socket.readyState === WebSocket.CONNECTING) {
-      self.callbacks.error(i18n('connection_failed'));
+      cause = 'timeout';
       socket.close();
     }
   }, 15000);
   socket.onopen = function() {
     if (self.socket !== socket) return;
     window.clearTimeout(self.timeout);
+    opened = true;
     self.callbacks.open();
   };
   socket.onmessage = function(event) {
@@ -57,13 +73,13 @@ lib.WebSocketConnection.prototype.connect = function(url) {
     self.callbacks.data(data);
   };
   socket.onerror = function() {
-    if (self.socket === socket) self.callbacks.error(i18n('connection_failed'));
+    if (self.socket === socket && cause !== 'timeout') cause = 'network_error';
   };
-  socket.onclose = function() {
+  socket.onclose = function(event) {
     if (self.socket !== socket) return;
     window.clearTimeout(self.timeout);
     self.socket = null;
-    self.callbacks.close();
+    self.callbacks.close(closeInfo(event));
   };
 };
 

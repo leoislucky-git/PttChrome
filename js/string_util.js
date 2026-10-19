@@ -130,25 +130,31 @@ String.prototype.parseReqNotMetText = function() {
   return (this.indexOf(' ◆ 未達看板發文限制:') === 0);
 };
 
+// Article statistics are independent of the shortcut labels and their order.
 String.prototype.parseStatusRow = function() {
-  var str = this;
-  // Modified 2026-10-19: recognize article statistics independently of shortcut labels and order.
-  var regex = /^ *瀏覽 第 (\d{1,3})(?:\/(\d{1,3}))? 頁 *\( *(\d{1,3})%\)  目前顯示: 第 0*(\d+)~0*(\d+) 行(?= |\(|$)/;
-  var result = regex.exec(str);
-  if (!result)
-    return null;
-
-  if (result.length == 6) {
+  var result = /^ *瀏覽 第 (\d+)(?:\/(\d+))? 頁 *\( *(\d+)%\)  (?:目前顯示|顯示範圍): 第 0*(\d+)~0*(\d+) 行(?= |\(|$)/.exec(this);
+  if (result) {
     return {
-      pageIndex:     parseInt(result[1]),
-      pageTotal:     parseInt(result[2]),
-      pagePercent:   parseInt(result[3]),
-      rowIndexStart: parseInt(result[4]),
-      rowIndexEnd:   parseInt(result[5])
+      pageIndex: parseInt(result[1], 10),
+      pageTotal: result[2] ? parseInt(result[2], 10) : null,
+      pagePercent: parseInt(result[3], 10),
+      rowIndexStart: parseInt(result[4], 10),
+      rowIndexEnd: parseInt(result[5], 10),
+      hasLineRange: true,
+      isEnd: parseInt(result[3], 10) == 100
     };
   }
-
-  return null;
+  result = /^ *瀏覽 P\.(\d+)\( *(\d+)%\) *(?:\(y\)回[應信]|\(X\/?%\)推文|\(h\)說明|\(←\/?q?\)離開)/.exec(this);
+  if (!result) return null;
+  return {
+    pageIndex: parseInt(result[1], 10),
+    pageTotal: null,
+    pagePercent: parseInt(result[2], 10),
+    rowIndexStart: null,
+    rowIndexEnd: null,
+    hasLineRange: false,
+    isEnd: parseInt(result[2], 10) == 100
+  };
 };
 
 String.prototype.parseListRow = function() {

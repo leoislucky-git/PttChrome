@@ -805,6 +805,18 @@ TermBuf.prototype = {
         this.view.useEasyReadingMode = false;
       }
 
+      // Legacy footers identify reading mode but cannot support line-based aggregation.
+      var readingStatus = this.getRowText(23, 0, this.cols).parseStatusRow();
+      if (this.view.useEasyReadingMode && readingStatus && !readingStatus.hasLineRange) {
+        this.view.useEasyReadingMode = false;
+        this.startedEasyReading = false;
+        this.easyReadingShowReplyText = false;
+        this.easyReadingShowPushInitText = false;
+        this.sendCommandAfterUpdate = '';
+        this.view.resetEasyReadingDisplay();
+        for (var row = 0; row < this.rows; ++row) this.lineChangeds[row] = true;
+      }
+
       if (this.view.useEasyReadingMode) {
         var lastRowText = this.getRowText(23, 0, this.cols);
         // dealing with page state jump to 0 because last row wasn't updated fully 
@@ -830,7 +842,7 @@ TermBuf.prototype = {
             var result = lastRowText.parseStatusRow();
             if (result) {
               var lastRowFirstCh = this.lines[23][0];
-              if (lastRowFirstCh.getBg() == 4 && lastRowFirstCh.getFg() == 7) {
+              if (result.isEnd || (lastRowFirstCh.getBg() == 4 && lastRowFirstCh.getFg() == 7)) {
                 this.easyReadingReachedPageEnd = true;
               } else {
                 this.easyReadingReachedPageEnd = false;

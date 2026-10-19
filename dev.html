@@ -19,7 +19,6 @@
 
     <script type="text/javascript" src="js/pttchrome.js"></script>
     <script type="text/javascript" src="js/touch_controller.js"></script>
-    <script type="text/javascript" src="js/google_drive.js"></script>
     <script type="text/javascript" src="js/websocket.js"></script>
     <script type="text/javascript" src="js/predefined_config.js"></script>
     <script type="text/javascript" src="js/pref.js"></script>
@@ -125,8 +124,6 @@
                 <div class="group">
                   <div class="list-group">
                     <div class="list-group-item-text">
-                      <div id="opt_webSocketUrl" class="form-group"></div>
-                      <p id="connectionEndpointHelp" class="help-block"></p>
                       <div id="opt_closeQuery" class="checkbox">
                       </div>
                       <div id="opt_enablePicPreview" class="checkbox">
@@ -209,26 +206,6 @@
                 <div id="opt_enableBlacklist" class="checkbox">
                 </div>
 
-                <div id="opt_googleDriveClientId" class="form-group"></div>
-                <p id="googleDriveHelp" class="help-block"></p>
-                <div id="blacklist_driveSync" style="margin-bottom:10px">
-                  <span id="blacklist_driveSyncTitle" style="margin-right:5px">Use Google Drive:</span>
-                  <a id="blacklist_driveAuthorize" style="margin-top:-3px" class="btn btn-default">Authorize PttChrome</a>
-                  <a id="blacklist_driveLoad" style="margin-top:-3px" class="btn btn-default">Load</a>
-                  <div class="btn-group" style="margin-top:-3px">
-                    <button id="blacklist_driveSave" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                    </button>
-                    <ul class="dropdown-menu" role="menu">
-                      <li><a id="blacklist_driveSaveNew" style="padding:3px 20px; cursor:pointer;">New Document</a></li>
-                      <li><a id="blacklist_driveSaveExisting" style="padding:3px 20px; cursor:pointer;">Existing Document</a></li>
-                    </ul>
-                  </div>
-                  <select id="blacklist_driveFiles" class="form-control" style="margin-top:8px" aria-label="Google Drive files"></select>
-                  <span id="blacklist_driveDone" style="margin-left:5px; display:none;">Done!</span>
-                  <span id="blacklist_driveLoading" style="margin-left:5px; display:none;">Loading ...</span>
-                  <a style="margin-left:5px" href="privacy.html" target="_blank"><span id="blacklist_privacyPolicy">Privacy Policy</span></a>
-                </div>
-
                 <span id="opt_blacklistInstruction"></span>
                 <!-- blacklist item start -->
                 <textarea id="opt_blacklistedUsers" class="form-control"></textarea>
@@ -249,11 +226,12 @@
 
               <div class="tab-pane" id="tabContentAbout">
                 <div class="list-group">
-                  <h4 class="list-group-item-heading">PttChrome <small>by <a href="mailto:yangchuck@gmail.com" target="_blank" rel="noreferrer">Chuck Yang</a></small></h4>
-                  <a href='https://github.com/leoislucky-git/PttChrome' target="_blank" rel="noreferrer">https://github.com/leoislucky-git/PttChrome</a>
+                  <h4 class="list-group-item-heading">PttChrome <small id="about_maintainer"></small></h4>
+                  <p><span id="about_originalAuthor"></span> <a href="https://github.com/iamchucky/PttChrome" target="_blank" rel="noreferrer">Chuck Yang</a></p>
                   <div class="list-group-item-text" style="margin-top:10px;">
                     <a id="about_feedback" href="https://github.com/leoislucky-git/PttChrome/issues" target="_blank" rel="noreferrer" class="btn btn-default"></a>
-                    <a id="about_fbpage" href="https://www.facebook.com/pttchrome" target="_blank" rel="noreferrer" class="btn btn-default"></a>
+                    <a id="about_source" href="https://github.com/leoislucky-git/PttChrome" target="_blank" rel="noreferrer" class="btn btn-default"></a>
+                    <a id="about_privacy" href="privacy.html" target="_blank" rel="noreferrer" class="btn btn-default"></a>
                   </div>
                 </div>
                 <div class="list-group">

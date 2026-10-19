@@ -1,4 +1,4 @@
-// Modified 2026-10-19: initialize without a browser extension.
+// Modified 2026-10-19: initialize the browser client.
 $(document).ready(function() {
   var site = getQueryVariable('site') || 'ptt.cc';
   setupI18n();

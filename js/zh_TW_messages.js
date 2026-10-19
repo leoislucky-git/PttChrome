@@ -207,35 +207,6 @@
     "message": "密碼"
   },
 
-  // blacklist drive sync
-  "blacklist_driveSyncTitle": {
-    "message": "使用 Google Drive:"
-  },
-  "blacklist_driveAuthorize": {
-    "message": "授權給 PttChrome 使用權限"
-  },
-  "blacklist_driveLoad": {
-    "message": "從 Drive 讀取"
-  },
-  "blacklist_driveSave": {
-    "message": "備份至 ... "
-  },
-  "blacklist_driveSaveNew": {
-    "message": "新文件"
-  },
-  "blacklist_driveSaveExisting": {
-    "message": "現有文件"
-  },
-  "blacklist_driveLoading": {
-    "message": "處理中 ..."
-  },
-  "blacklist_driveDone": {
-    "message": "完成!"
-  },
-  "blacklist_privacyPolicy": {
-    "message": "隱私權政策"
-  },
-
   // extensions
   "ext_quickSearch": {
     "message": "快速搜尋"
@@ -249,17 +220,14 @@
 
   // about page
   "about_feedback": {
-    "message": "客服信箱"
-  },
-  "about_fbpage": {
-    "message": "粉絲頁"
+    "message": "問題回報"
   },
   "about_version_title": {
     "message": "版本"
   },
 
   "about_new_title": {
-    "message": "新功能"
+    "message": "本版重點"
   },
 
 
@@ -393,21 +361,17 @@
 };
 
 // Modified 2026-10-19: standalone connection and browser services.
-locale.zh_TW.options_webSocketUrl = { message: "自訂安全連線／代理網址（留空使用官方服務）" };
-locale.zh_TW.options_googleDriveClientId = { message: "Google Drive OAuth 用戶端 ID（選填）" };
-locale.zh_TW.connection_endpointHelp = { message: "PTT 限制第三方網站來源。若官方直連失敗，請填入你信任的 wss:// 代理網址，儲存後按重新連線。代理會經手登入與文章資料。GitHub Pages 本身無法提供代理。" };
-locale.zh_TW.connection_failed = { message: "連線未成功或已中斷。官方服務可能拒絕第三方網站來源；請在設定填入可用且信任的安全 WebSocket 代理，再重新連線。" };
+locale.zh_TW.connection_failed = { message: "連線未成功或已中斷。請確認網路，以及 PttChrome 連線助手是否已安裝並啟用，再重新連線。" };
 locale.zh_TW.connection_connecting = { message: "正在連線…" };
-locale.zh_TW.connection_invalidUrl = { message: "請輸入完整的 wss:// 安全連線網址，不可含帳密或 # 片段。" };
 locale.zh_TW.storage_failed = { message: "瀏覽器無法讀取或儲存設定，本次將暫存於記憶體；關閉網頁後可能無法保留。" };
 locale.zh_TW.clipboard_copyFailed = { message: "複製未成功，請使用瀏覽器的複製功能。" };
 locale.zh_TW.clipboard_pasteFailed = { message: "無法讀取剪貼簿。請點回終端機，使用 Ctrl+V 或 Ctrl+Shift+V 貼上。" };
-locale.zh_TW.drive_setup = { message: "雲端備份選用：請填入自己的 Google 網頁應用程式用戶端 ID，在 Google Cloud 啟用 Drive API，並將本站來源加入「已授權的 JavaScript 來源」。檔案清單只列出此用戶端可存取的備份；原 App 的授權不會自動移轉。" };
-locale.zh_TW.drive_failed = { message: "Google Drive 操作未成功，請確認網路、用戶端設定及授權。" };
-locale.zh_TW.drive_ready = { message: "Google 授權元件已就緒，請再按一次授權。" };
-locale.zh_TW.drive_selectFile = { message: "選擇黑名單備份" };
-locale.zh_TW.drive_authorizeFirst = { message: "請先按「授權」登入 Google；授權過期時需重新授權。" };
-locale.zh_TW.autologin_warning = { message: "自動登入帳密會儲存在此瀏覽器的網站資料中，不會上傳 GitHub 或 Google Drive；清除網站資料會一併刪除。原 Chrome App 設定不會自動移轉。" };
-locale.zh_TW.input_sitePlaceholder = { message: "ptt.cc、ptt2.cc 或完整的 wss:// 連線網址" };
-locale.zh_TW.about_version = { message: "Standalone WebSocket 2026.10.19" };
-locale.zh_TW.about_new_content = { message: ["保留 PttChrome 原有介面、滑鼠瀏覽、好讀模式、黑名單與輸入小幫手。","不再依賴 Chrome App：使用安全 WebSocket、瀏覽器設定儲存與剪貼簿。","一般設定可填入自己的 wss:// 代理；PTT 的來源限制可能阻擋官方直連。","Google Drive 黑名單備份需自行設定 OAuth 用戶端，與原 App 授權分開。","已修正新版文章狀態列辨識；原 App 的帳密與設定需重新輸入。"] };
+locale.zh_TW.autologin_warning = { message: "帳密僅儲存在此瀏覽器，未加密；清除網站資料後會刪除。" };
+locale.zh_TW.input_sitePlaceholder = { message: "ptt.cc 或 ptt2.cc" };
+locale.zh_TW.about_version = { message: "網頁維護版 2026.10.19" };
+locale.zh_TW.about_new_content = { message: ["改用 WebSocket 直連 PTT。","修正文章狀態辨識，恢復文章中的滑鼠瀏覽操作。"] };
+locale.zh_TW.connection_invalidSite = { message: "僅支援 ptt.cc 或 ptt2.cc。" };
+locale.zh_TW.about_maintainer = { message: "非官方維護版 · leoislucky-git" };
+locale.zh_TW.about_originalAuthor = { message: "原作者：" };
+locale.zh_TW.about_source = { message: "原始碼" };
+locale.zh_TW.about_privacy = { message: "隱私權政策" };

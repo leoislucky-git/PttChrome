@@ -13,7 +13,6 @@ function PttChromePref(app, onInitializedCallback) {
 
   this.onInitializedCallback = onInitializedCallback;
   this.initCallbackCalled = false;
-  this.gdrive = new GoogleDrive(app);
 }
 
 PttChromePref.prototype = {
@@ -177,8 +176,6 @@ PttChromePref.prototype = {
       $(this).tab('show');
     });
 
-    $('#connectionEndpointHelp').text(i18n('connection_endpointHelp'));
-    this.gdrive.setupUi();
     $('#opt_enableNotifications input').off('change').on('change', function() {
       if (this.checked && typeof Notification !== 'undefined' && Notification.permission === 'default') {
         Notification.requestPermission().catch(function() {});
@@ -346,7 +343,7 @@ PttChromePref.prototype = {
 
   setupAboutPage: function() {
     var contents = [
-        'feedback', 'fbpage',
+        'feedback', 'maintainer', 'originalAuthor', 'source', 'privacy',
         'version_title', 'version',
         'new_title'
       ];
@@ -446,15 +443,6 @@ PttChromePref.prototype = {
       pswd = '';
     }
     this.logins = [user, pswd];
-    var endpoint = this.values.webSocketUrl.trim();
-    if (endpoint) {
-      try {
-        lib.WebSocketConnection.resolveUrl('ptt.cc', endpoint);
-      } catch (error) {
-        window.alert(i18n('connection_invalidUrl'));
-        this.values.webSocketUrl = this.storage.get().values.webSocketUrl;
-      }
-    }
   },
 
   updateToApp: function() {

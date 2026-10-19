@@ -85,10 +85,10 @@ TelnetConnection.prototype.connect = function(host) {
   this.preamble = '';
   this.preambleDone = false;
   try {
-    this.socket.connect(lib.WebSocketConnection.resolveUrl(this.host, this.app.pref.get('webSocketUrl').trim()));
+    this.socket.connect(lib.WebSocketConnection.resolveUrl(this.host));
   } catch (error) {
     this.app.onClose();
-    this.app.showConnectionError(i18n('connection_invalidUrl'));
+    this.app.showConnectionError(i18n('connection_invalidSite'));
   }
 };
 

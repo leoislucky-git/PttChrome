@@ -6,8 +6,6 @@ var DEFAULT_PREFS = {
   // general
   closeQuery            : false,
   //dbcsDetect    : false,
-  webSocketUrl         : '',
-  googleDriveClientId   : '',
   enablePicPreview      : true,
   enableNotifications   : true,
   enableEasyReading     : false,

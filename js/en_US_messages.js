@@ -210,35 +210,6 @@ locale.en_US = {
     "message": "Password"
   },
 
-  // blacklist drive sync
-  "blacklist_driveSyncTitle": {
-    "message": "Connect with Google Drive:"
-  },
-  "blacklist_driveAuthorize": {
-    "message": "Authorize PttChrome"
-  },
-  "blacklist_driveLoad": {
-    "message": "Load from Drive"
-  },
-  "blacklist_driveSave": {
-    "message": "Backup to ... "
-  },
-  "blacklist_driveSaveNew": {
-    "message": "New Document"
-  },
-  "blacklist_driveSaveExisting": {
-    "message": "Existing Document"
-  },
-  "blacklist_driveLoading": {
-    "message": "Working ..."
-  },
-  "blacklist_driveDone": {
-    "message": "Done!"
-  },
-  "blacklist_privacyPolicy": {
-    "message": "Privacy Policy"
-  },
-
   // extensions
   "ext_quickSearch": {
     "message": "Quick Search"
@@ -252,17 +223,14 @@ locale.en_US = {
 
   // about page
   "about_feedback": {
-    "message": "Send feedback"
-  },
-  "about_fbpage": {
-    "message": "Facebook"
+    "message": "Report an issue"
   },
   "about_version_title": {
     "message": "Version"
   },
 
   "about_new_title": {
-    "message": "What's new"
+    "message": "Highlights"
   },
 
 
@@ -396,21 +364,17 @@ locale.en_US = {
 };
 
 // Modified 2026-10-19: standalone connection and browser services.
-locale.en_US.options_webSocketUrl = { message: "Secure connection / proxy URL (blank: official service)" };
-locale.en_US.options_googleDriveClientId = { message: "Google Drive OAuth client ID (optional)" };
-locale.en_US.connection_endpointHelp = { message: "PTT restricts third-party website origins. If direct connection fails, enter a trusted wss:// proxy, save and reconnect. The proxy handles login and article data. GitHub Pages cannot host a proxy." };
-locale.en_US.connection_failed = { message: "Connection failed or closed. The official service may reject third-party website origins. Configure a working, trusted secure WebSocket proxy in Settings and reconnect." };
+locale.en_US.connection_failed = { message: "Connection failed or closed. Check your network and make sure the PttChrome Connection Helper is installed and enabled, then reconnect." };
 locale.en_US.connection_connecting = { message: "Connecting…" };
-locale.en_US.connection_invalidUrl = { message: "Enter a complete wss:// URL without embedded credentials or a # fragment." };
 locale.en_US.storage_failed = { message: "Browser settings could not be read or saved. Changes will be kept in memory and may be lost when this page closes." };
 locale.en_US.clipboard_copyFailed = { message: "Copy failed. Please use the browser copy command." };
 locale.en_US.clipboard_pasteFailed = { message: "Clipboard access failed. Focus the terminal and use Ctrl+V or Ctrl+Shift+V." };
-locale.en_US.drive_setup = { message: "Optional backup: enter your own Google web OAuth client ID, enable the Drive API and authorize this site origin in Google Cloud. Only backups accessible to this client appear. The original App authorization does not transfer." };
-locale.en_US.drive_failed = { message: "Google Drive failed. Check your connection, client configuration and authorization." };
-locale.en_US.drive_ready = { message: "Google authorization is ready. Click Authorize again." };
-locale.en_US.drive_selectFile = { message: "Choose a blacklist backup" };
-locale.en_US.drive_authorizeFirst = { message: "Authorize with Google first. Expired access requires authorization again." };
-locale.en_US.autologin_warning = { message: "Auto-login credentials are saved in this browser’s site data, not uploaded to GitHub or Google Drive. Clearing site data removes them. Original Chrome App settings do not transfer automatically." };
-locale.en_US.input_sitePlaceholder = { message: "ptt.cc, ptt2.cc or a complete wss:// connection URL" };
-locale.en_US.about_version = { message: "Standalone WebSocket 2026.10.19" };
-locale.en_US.about_new_content = { message: ["Preserves the original terminal, mouse browsing, easy reading, blacklist and input helpers.","Uses secure WebSockets, browser settings storage and clipboard instead of a Chrome App.","Configure your own trusted wss:// proxy in General settings if PTT rejects the website origin.","Google Drive blacklist backup requires your own OAuth client, separate from the original App.","Updated article status recognition. Original App credentials and settings need to be entered again."] };
+locale.en_US.autologin_warning = { message: "Credentials are stored only in this browser, without encryption. Clearing site data removes them." };
+locale.en_US.input_sitePlaceholder = { message: "ptt.cc or ptt2.cc" };
+locale.en_US.about_version = { message: "Web maintenance edition 2026.10.19" };
+locale.en_US.about_new_content = { message: ["Connects directly to PTT over WebSocket.","Updated article status recognition restores mouse browsing in articles."] };
+locale.en_US.connection_invalidSite = { message: "Only ptt.cc and ptt2.cc are supported." };
+locale.en_US.about_maintainer = { message: "Unofficial edition · leoislucky-git" };
+locale.en_US.about_originalAuthor = { message: "Original author:" };
+locale.en_US.about_source = { message: "Source code" };
+locale.en_US.about_privacy = { message: "Privacy policy" };

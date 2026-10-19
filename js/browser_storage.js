@@ -8,7 +8,11 @@ function BrowserStorage() {
     if (stored) {
       var parsed = JSON.parse(stored);
       if (parsed && typeof parsed.values === 'object' && parsed.values !== null) {
-        this.data.values = parsed.values;
+        for (var name in DEFAULT_PREFS) {
+          if (Object.prototype.hasOwnProperty.call(parsed.values, name)) {
+            this.data.values[name] = parsed.values[name];
+          }
+        }
         if (parsed.logins && typeof parsed.logins.u === 'string' && typeof parsed.logins.p === 'string') {
           this.data.logins = parsed.logins;
         }

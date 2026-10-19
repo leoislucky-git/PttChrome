@@ -7,18 +7,16 @@ lib.WebSocketConnection = function(callbacks) {
   this.timeout = null;
 };
 
-lib.WebSocketConnection.resolveUrl = function(site, endpoint) {
+lib.WebSocketConnection.resolveUrl = function(site) {
   var sites = {
     'ptt.cc': 'wss://ws.ptt.cc/bbs',
     'ptt2.cc': 'wss://ws.ptt2.cc/bbs'
   };
   var host = site.replace(/:(23|22|443)$/, '').toLowerCase();
-  var address = sites[host] ? (endpoint || sites[host]) : site;
-  var url = new URL(address);
-  if (url.protocol !== 'wss:' || url.username || url.password || url.hash) {
-    throw new Error(i18n('connection_invalidUrl'));
+  if (!Object.prototype.hasOwnProperty.call(sites, host)) {
+    throw new Error(i18n('connection_invalidSite'));
   }
-  return url.href;
+  return sites[host];
 };
 
 lib.WebSocketConnection.prototype.connect = function(url) {

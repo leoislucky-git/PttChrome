@@ -593,26 +593,11 @@ pttchrome.App.prototype.onWindowResize = function() {
 };
 
 pttchrome.App.prototype.switchMouseBrowsing = function() {
-  if (this.CmdHandler.getAttribute('useMouseBrowsing')=='1') {
-    this.CmdHandler.setAttribute('useMouseBrowsing', '0');
-    this.buf.useMouseBrowsing=false;
-  } else {
-    this.CmdHandler.setAttribute('useMouseBrowsing', '1');
-    this.buf.useMouseBrowsing=true;
-  }
-
-  if (!this.buf.useMouseBrowsing) {
-    this.buf.BBSWin.style.cursor = 'auto';
-    this.buf.clearHighlight();
-    this.buf.mouseCursor=0;
-    this.buf.nowHighlight=-1;
-    this.buf.tempMouseCol=0;
-    this.buf.tempMouseRow=0;
-  } else {
-    this.buf.resetMousePos();
-    this.view.redraw(true);
-    this.view.updateCursorPos();
-  }
+  var enabled = !this.pref.get('useMouseBrowsing');
+  this.pref.set('useMouseBrowsing', enabled);
+  this.pref.setStorage({ values: { useMouseBrowsing: enabled } });
+  $('#opt_useMouseBrowsing input').prop('checked', enabled);
+  this.onPrefChange(this.pref, 'useMouseBrowsing');
 };
 
 pttchrome.App.prototype.antiIdle = function() {

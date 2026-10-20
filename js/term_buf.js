@@ -71,6 +71,7 @@ function TermChar(ch) {
   this.partOfKeyWord = false;
   this.keyWordColor = '#ff0000';
   this.fullurl = '';
+  this.hyperlink = '';
 }
 
 // static variable for all TermChar objects
@@ -82,6 +83,7 @@ TermChar.prototype = {
   copyFrom: function(attr) {
     this.ch = attr.ch;
     this.isLeadByte = attr.isLeadByte;
+    this.hyperlink = attr.hyperlink;
     this.copyAttr(attr);
   },
 
@@ -183,6 +185,7 @@ function TermBuf(cols, rows) {
   this.newChar = new TermChar(' ');
   this.disableLinefeed = false;
   this.altScreen = '';
+  this.activeHyperlink = '';
   this.changed = false;
   this.posChanged = false;
   this.pageState = 0;
@@ -236,6 +239,18 @@ TermBuf.prototype = {
     this.view = view;
   },
 
+  setHyperlink: function(url) {
+    this.activeHyperlink = '';
+    if (!url || /[\x00-\x20\x7f]/.test(url)) return;
+    if (this.view && this.view.charset != 'UTF-8') url = url.b2u();
+    try {
+      var parsed = new URL(url);
+      if (parsed.protocol === 'https:' || parsed.protocol === 'http:') this.activeHyperlink = parsed.href;
+    } catch (error) {
+      // Invalid or unsupported destinations are displayed as ordinary text.
+    }
+  },
+
   puts: function(str) {
     if (!str)
       return;
@@ -286,6 +301,7 @@ TermBuf.prototype = {
       default:
         var ch2 = line[this.cur_x];
         ch2.ch=ch;
+        ch2.hyperlink = this.activeHyperlink;
         ch2.copyAttr(this.attr);
         ch2.needUpdate=true;
         ++this.cur_x;
@@ -294,6 +310,7 @@ TermBuf.prototype = {
         if (this.view.charset == 'UTF-8' && this.isFullWidth(ch) && this.cur_x < cols) {
           ch2 = line[this.cur_x];
           ch2.ch = '';
+          ch2.hyperlink = this.activeHyperlink;
           ch2.copyAttr(this.attr);
           ch2.needUpdate = true;
           ++this.cur_x;
@@ -375,20 +392,32 @@ TermBuf.prototype = {
           }
           s = str;
         }
+        var uris = [];
+        // Keep explicit OSC 8 targets across line breaks and cursor updates.
+        for (var col = 0; col < cols;) {
+          var target = line[col].hyperlink;
+          if (!target) { ++col; continue; }
+          var start = col++;
+          while (col < cols && line[col].hyperlink === target) ++col;
+          uris.push([start, col, target]);
+        }
         var res;
-        var uris = null;
-        // pairs of URI start and end positions are stored in line.uri.
-        while ( (res = this.uriRegEx.exec(s)) !== null ) {
-          if (!uris)   uris = [];
-          var uri = [res.index, res.index+res[0].length];
-          uris.push(uri);
-          // dump('found URI: ' + res[0] + '\n');
+        while ((res = this.uriRegEx.exec(s)) !== null) {
+          var uri = [res.index, res.index + res[0].length];
+          var overlapsHyperlink = false;
+          for (var iuri = 0; iuri < uris.length; ++iuri) {
+            if (uri[0] < uris[iuri][1] && uri[1] > uris[iuri][0]) {
+              overlapsHyperlink = true;
+              break;
+            }
+          }
+          if (!overlapsHyperlink) uris.push(uri);
         }
 
         if (this.view.conn.autoLoginStage > 0)
           this.view.conn.checkAutoLogin(row);
 
-        if (uris) {
+        if (uris.length) {
           line.uris = uris;
           // dump(line.uris.length + "uris found\n");
         }
@@ -406,8 +435,10 @@ TermBuf.prototype = {
               line[col].needUpdate = true; //fix link bug
             }
             var u;
-            if (this.view.charset != 'UTF-8')
-              u = urlTemp;//this.conv.convertStringToUTF8(urlTemp, this.view.charset,  true);
+            if (uri[2])
+              u = uri[2];
+            else if (this.view.charset != 'UTF-8')
+              u = urlTemp;
             else {
               var str = '';
               for (var i = 0; i < urlTemp.length; ++i) {
@@ -419,17 +450,12 @@ TermBuf.prototype = {
             }
             var urlTemp2 = urlTemp.toLowerCase();
             line[uri[0]].startOfURL = true;
-            if (urlTemp2.substr(0,6) == 'pid://') {
+            if (!uri[2] && urlTemp2.substr(0,6) == 'pid://') {
               line[uri[0]].fullurl='http://www.pixiv.net/member_illust.php?mode=big&illust_id='+urlTemp2.substr(6,15);
             } else {
-              //var g = encodeURI(u);
-              //line[uri[0]].fullurl=g;
               line[uri[0]].fullurl = u;
             }
             line[uri[1]-1].endOfURL = true;
-            //line[uri[1]-1].needUpdate = true; //fix link bug, some wee need update 2 byte(this byte and prevous byte)
-            //for (var col = uri[0]; col < uri[1]; ++col)
-            //  line[col].fullurl = g;
           }
         }
         //

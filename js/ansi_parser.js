@@ -4,6 +4,8 @@ lib.AnsiParser = function(termbuf) {
   this.termbuf = termbuf;
   this.state = lib.AnsiParser.STATE_TEXT;
   this.esc = '';
+  this.oscOverflow = false;
+  if (termbuf) termbuf.setHyperlink('');
 };
 
 lib.AnsiParser.STATE_TEXT = 0;
@@ -12,6 +14,16 @@ lib.AnsiParser.STATE_CSI = 2;
 lib.AnsiParser.STATE_C1 = 3;
 lib.AnsiParser.STATE_OSC = 4;
 lib.AnsiParser.STATE_OSC_ESC = 5;
+
+// Only OSC 8 changes link metadata; other OSC commands remain invisible.
+lib.AnsiParser.prototype.finishOSC = function() {
+  var payload = this.esc;
+  this.esc = '';
+  this.state = lib.AnsiParser.STATE_TEXT;
+  if (this.oscOverflow) return;
+  var hyperlink = /^8;[^;]*;([\s\S]*)$/.exec(payload);
+  if (hyperlink) this.termbuf.setHyperlink(hyperlink[1]);
+};
 
 lib.AnsiParser.prototype.feed = function(data) {
   var term = this.termbuf;
@@ -268,20 +280,31 @@ lib.AnsiParser.prototype.feed = function(data) {
         this.esc += ch;
       }
       break;
-    // OSC metadata (including OSC 8 hyperlinks) never occupies screen cells.
-    // Keep its state across feed() calls: the payload and ESC \\ may be split.
-    // Unsupported OSC commands are consumed without changing terminal state.
+    // OSC and its terminator can span multiple feed() calls.
     case lib.AnsiParser.STATE_OSC:
-      if (ch == '\x07' || ch == '\x18' || ch == '\x1a')
+      if (ch == '\x07') {
+        this.finishOSC();
+      } else if (ch == '\x18' || ch == '\x1a') {
+        this.esc = '';
         this.state = lib.AnsiParser.STATE_TEXT;
-      else if (ch == '\x1b')
+      } else if (ch == '\x1b') {
         this.state = lib.AnsiParser.STATE_OSC_ESC;
+      } else if (!this.oscOverflow) {
+        // Bound metadata without returning an oversized payload to the screen.
+        if (this.esc.length < 65536) this.esc += ch;
+        else this.oscOverflow = true;
+      }
       break;
     case lib.AnsiParser.STATE_OSC_ESC:
-      if (ch == '\\' || ch == '\x07' || ch == '\x18' || ch == '\x1a')
+      if (ch == '\\' || ch == '\x07') {
+        this.finishOSC();
+      } else if (ch == '\x18' || ch == '\x1a') {
+        this.esc = '';
         this.state = lib.AnsiParser.STATE_TEXT;
-      else if (ch != '\x1b')
+      } else if (ch != '\x1b') {
         this.state = lib.AnsiParser.STATE_OSC;
+        --i;
+      }
       break;
     case lib.AnsiParser.STATE_C1:
       var C1_End = true;
@@ -337,6 +360,7 @@ lib.AnsiParser.prototype.feed = function(data) {
         this.state=lib.AnsiParser.STATE_CSI;
       else if (ch == ']') {
         this.esc = '';
+        this.oscOverflow = false;
         this.state = lib.AnsiParser.STATE_OSC;
       } else {
         this.state=lib.AnsiParser.STATE_C1;

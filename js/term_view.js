@@ -360,21 +360,7 @@ TermView.prototype = {
   },
 
   createNormalChar: function(ch, char1, fg, bg) {
-    var row = this.curRow;
-    var col = this.curCol;
-    var useHyperLink = this.useHyperLink;
-    var s0 = '';
     var s1 = '';
-    var s2 = '';
-    if (ch.isStartOfURL() && useHyperLink) {
-      s0 += this.closeSpanIfIsOpen();
-      s0 += '<a scol="'+col+'" class="y q'+this.deffg+' b'+this.defbg+'" href="' +ch.getFullURL() + '"' + this.prePicRel( ch.getFullURL()) + ' rel="noreferrer" target="_blank" srow="'+row+'">';
-      this.setCurColorStyle(this.deffg, this.defbg, false);
-    }
-    if (ch.isEndOfURL() && useHyperLink) {
-      s2 = '</a>';
-    }
-
     if (this.openSpan && (bg == this.curBg && (fg == this.curFg || char1 <= ' ') && ch.blink == this.curBlink)) {
       s1 += this.getHtmlEntitySafe(char1);
     } else if (bg == this.defbg && (fg == this.deffg || char1 <= ' ') && !ch.blink) {
@@ -388,16 +374,20 @@ TermView.prototype = {
       this.openSpan = true;
       s1 += this.getHtmlEntitySafe(char1);
     }
-    if (s2) {
-      this.setCurColorStyle(this.deffg, this.defbg, false);
-      s1 += this.closeSpanIfIsOpen();
-    }
-    return s0+s1+s2;
+    return s1;
   },
 
   determineAndSetHtmlForCol: function(line, outhtml) {
     var ch = line[this.curCol];
     var curColOutHtml = outhtml[this.curCol];
+    var linkStart = '';
+    if (ch.isStartOfURL() && this.useHyperLink) {
+      linkStart = this.closeSpanIfIsOpen();
+      var url = ch.getFullURL();
+      var href = url.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      linkStart += '<a scol="'+this.curCol+'" class="y q'+this.deffg+' b'+this.defbg+'" href="'+href+'"'+this.prePicRel(url)+' rel="noreferrer" target="_blank" srow="'+this.curRow+'">';
+      this.setCurColorStyle(this.deffg, this.defbg, false);
+    }
 
     var fg = ch.getFg();
     var bg = ch.getBg();
@@ -457,6 +447,12 @@ TermView.prototype = {
     } else { // NOT LeadByte
       var spanstr = this.createNormalChar(ch, ch.ch, fg, bg);
       curColOutHtml.setHtml(spanstr);
+    }
+    if (linkStart) curColOutHtml.setHtml(linkStart + curColOutHtml.getHtml());
+    var endCol = Math.min(this.curCol, this.buf.cols - 1);
+    if (line[endCol].isEndOfURL() && this.useHyperLink) {
+      outhtml[endCol].addHtml(this.closeSpanIfIsOpen() + '</a>');
+      this.setCurColorStyle(this.deffg, this.defbg, false);
     }
     ch.needUpdate = false;
 
